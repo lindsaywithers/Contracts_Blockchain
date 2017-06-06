@@ -18,6 +18,11 @@ var cors = require('cors');
 var host = setup.SERVER.HOST;
 var port = setup.SERVER.PORT;
 
+var Ibc1 = require('ibm-blockchain-js');														//rest based SDK for ibm blockchain
+var ibc = new Ibc1();
+var peers = null;
+var users = null;	
+
 app.use(compression());
 app.use(morgan('dev'));
 app.use(bodyParser.json());
@@ -220,10 +225,7 @@ process.env.NODE_ENV = 'production';
 server.timeout = 240000;																							// Ta-da.
 console.log('------------------------------------------ Server Up - ' + host + ':' + port + ' ------------------------------------------');
 
-var Ibc1 = require('ibm-blockchain-js');														//rest based SDK for ibm blockchain
-var ibc = new Ibc1();
-var peers = null;
-var users = null;	
+
 
 if(process.env.VCAP_SERVICES){																	//load from vcap, search for service, 1 of the 3 should be found...
 	var servicesObject = JSON.parse(process.env.VCAP_SERVICES);
