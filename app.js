@@ -204,14 +204,7 @@ app.use(function(err, req, res, next) {														// = development error hand
 	}
 
 	function sendMsg(json){
-		if(ws){
-			try{
-				res.json(JSON.stringify(json));
-			}
-			catch(e){
-				console.log('Error', e);
-			}
-		}
+		res.json(JSON.stringify(json));
 	}
 
 
