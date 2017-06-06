@@ -52,13 +52,12 @@ router.get('/', function(req, res) {
 });
 
 router.get('/chainstats', function(req, res) {
-    ibc.chain_stats(cb_chainstats);   
+    res.json(ibc.chain_stats(cb_chainstats));   
 });
 
-router.route('/create')
-    .post(function(req, res) {
-          chaincode.invoke.init_marble([Math.random().toString(), "blue", "xsmall", "garrett"], cb_invoked);
-    });
+router.route('/create').post(function(req, res) {
+    res.json(chaincode.invoke.init_marble([Math.random().toString(), "blue", "xsmall", "garrett"], cb_invoked));
+});
 
 app.use('/api', router);
 
@@ -157,7 +156,7 @@ app.use(function(err, req, res, next) {														// = development error hand
 		if(e != null) console.log('[ws error] did not get marble:', e);
 		else {
 			try{
-				sendMsg({msg: 'marbles', marble: JSON.parse(marble)});
+				return sendMsg({msg: 'marbles', marble: JSON.parse(marble)});
 			}
 			catch(e){}
 		}
@@ -165,7 +164,7 @@ app.use(function(err, req, res, next) {														// = development error hand
 	
 	function cb_invoked(e, a){
 		console.log('response: ', e, a);
-		sendMsg(a);
+		return sendMsg(a);
 	}
 	
 	function cb_chainstats(e, chain_stats){
@@ -181,7 +180,7 @@ app.use(function(err, req, res, next) {														// = development error hand
 				ibc.block_stats(block_height, function(e, stats){
 					if(e == null){
 						stats.height = block_height;
-						sendMsg({msg: 'chainstats', e: e, chainstats: chain_stats, blockstats: stats});
+						return sendMsg({msg: 'chainstats', e: e, chainstats: chain_stats, blockstats: stats});
 					}
 					cb(null);
 				});
@@ -196,7 +195,7 @@ app.use(function(err, req, res, next) {														// = development error hand
 			try{
 				trades = JSON.parse(trades);
 				if(trades && trades.open_trades){
-					sendMsg({msg: 'open_trades', open_trades: trades.open_trades});
+					return sendMsg({msg: 'open_trades', open_trades: trades.open_trades});
 				}
 			}
 			catch(e){}
@@ -204,7 +203,7 @@ app.use(function(err, req, res, next) {														// = development error hand
 	}
 
 	function sendMsg(json){
-		res.json(JSON.stringify(json));
+		return JSON.stringify(json);
 	}
 
 
