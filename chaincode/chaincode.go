@@ -69,13 +69,6 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 		return nil, err
 	}
 	
-	var trades AllTrades
-	jsonAsBytes, _ = json.Marshal(trades)								//clear the open trade struct
-	err = stub.PutState(openTradesStr, jsonAsBytes)
-	if err != nil {
-		return nil, err
-	}
-	
 	return nil, nil
 }
 
@@ -97,16 +90,14 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	if function == "init" {													//initialize the chaincode state, used as reset
 		return t.Init(stub, "init", args)
 	} else if function == "delete" {										//deletes an entity from its state
-		res, err := t.Delete(stub, args)
-		cleanTrades(stub)													//lets make sure all open trades are still valid
+		res, err := t.Delete(stub, args)													//lets make sure all open trades are still valid
 		return res, err
 	} else if function == "write" {											//writes a value to the chaincode state
 		return t.Write(stub, args)
 	} else if function == "init_contract" {									//create a new contract
 		return t.init_contract(stub, args)
 	} else if function == "set_user" {										//change owner of a contract
-		res, err := t.set_user(stub, args)
-		cleanTrades(stub)													//lets make sure all open trades are still valid
+		res, err := t.set_user(stub, args)													//lets make sure all open trades are still valid
 		return res, err
 	} 
 	fmt.Println("invoke did not find func: " + function)					//error
@@ -284,7 +275,7 @@ func (t *SimpleChaincode) set_user(stub shim.ChaincodeStubInterface, args []stri
 	}
 	res := Contract{}
 	json.Unmarshal(contractAsBytes, &res)										//un stringify it aka JSON.parse()
-	res.User = args[1]														//change the user
+	res.Party1 = args[1]														//change the user
 	
 	jsonAsBytes, _ := json.Marshal(res)
 	err = stub.PutState(args[0], jsonAsBytes)								//rewrite the contract with id as key
