@@ -31,26 +31,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded()); 
 app.use(cookieParser());
 app.use('/cc/summary', serve_static(path.join(__dirname, 'cc_summaries')) );												//for chaincode investigator
-app.use( serve_static(path.join(__dirname, 'public'), {maxAge: '1d', setHeaders: setCustomCC}) );							//1 day cache
-//app.use( serve_static(path.join(__dirname, 'public')) );
-app.use(session({secret:'Somethignsomething1234!test', resave:true, saveUninitialized:true}));
-function setCustomCC(res, path) {
-	if (serve_static.mime.lookup(path) === 'image/jpeg')  res.setHeader('Cache-Control', 'public, max-age=2592000');		//30 days cache
-	else if (serve_static.mime.lookup(path) === 'image/png') res.setHeader('Cache-Control', 'public, max-age=2592000');
-	else if (serve_static.mime.lookup(path) === 'image/x-icon') res.setHeader('Cache-Control', 'public, max-age=2592000');
-}
+app.use( serve_static(path.join(__dirname, 'public')) );
+
 // Enable CORS preflight across the board.
 app.options('*', cors());
 app.use(cors());
-
-//---------------------
-// Cache Busting Hash
-//---------------------
-var bust_js = require('./busters_js.json');
-var bust_css = require('./busters_css.json');
-process.env.cachebust_js = bust_js['public/js/singlejshash'];			//i'm just making 1 hash against all js for easier jade implementation
-process.env.cachebust_css = bust_css['public/css/singlecsshash'];		//i'm just making 1 hash against all css for easier jade implementation
-console.log('cache busting hash js', process.env.cachebust_js, 'css', process.env.cachebust_css);
 
 
 ///////////  Configure Webserver  ///////////
@@ -117,12 +102,6 @@ if(process.env.VCAP_SERVICES){																	//load from vcap, search for serv
 	var servicesObject = JSON.parse(process.env.VCAP_SERVICES);
 	for(var i in servicesObject){
 		if(i.indexOf('ibm-blockchain') >= 0){													//looks close enough
-			if(servicesObject[i][0].credentials.error){
-				console.log('!\n!\n! Error from Bluemix: \n', servicesObject[i][0].credentials.error, '!\n!\n');
-				peers = null;
-				users = null;
-				process.error = {type: 'network', msg: 'Due to overwhelming demand the IBM Blockchain Network service is at maximum capacity.  Please try recreating this service at a later date.'};
-			}
 			if(servicesObject[i][0].credentials && servicesObject[i][0].credentials.peers){		//found the blob, copy it to 'peers'
 				console.log('overwritting peers, loading from a vcap service: ', i);
 				peers = servicesObject[i][0].credentials.peers;
@@ -174,8 +153,8 @@ var options = 	{
 					},
 					chaincode:{
 						zip_url: 'https://github.com/garrettrowe/Contracts_Blockchain/archive/master.zip',
-						unzip_dir: 'Contracts_Blockchain',													//subdirectroy name of chaincode after unzipped
-						git_url: 'https://github.com/garrettrowe/Contracts_Blockchain/tree/master/chaincode'
+						unzip_dir: 'Contracts_Blockchain/master',													//subdirectroy name of chaincode after unzipped
+						git_url: 'https://github.com/garrettrowe/Contracts_Blockchain'
 					}
 				};
 
