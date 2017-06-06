@@ -177,7 +177,7 @@ func (t *SimpleChaincode) Delete(stub shim.ChaincodeStubInterface, args []string
 	}
 	jsonAsBytes, _ := json.Marshal(contractIndex)									//save new index
 	err = stub.PutState(contractIndexStr, jsonAsBytes)
-	return nil, nil
+	return "deleted " + name, nil
 }
 
 // ============================================================================================================================
