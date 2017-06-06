@@ -174,8 +174,8 @@ var options = 	{
 					},
 					chaincode:{
 						zip_url: 'https://github.com/garrettrowe/Contracts_Blockchain/archive/master.zip',
-						unzip_dir: 'Contracts_Blockchain/chaincode',													//subdirectroy name of chaincode after unzipped
-						git_url: 'https://github.com/garrettrowe/Contracts_Blockchain/tree/master/chaincode',						//GO get http url
+						unzip_dir: 'Contracts_Blockchain',													//subdirectroy name of chaincode after unzipped
+						git_url: 'https://github.com/garrettrowe/Contracts_Blockchain/tree/master/chaincode'
 					}
 				};
 
