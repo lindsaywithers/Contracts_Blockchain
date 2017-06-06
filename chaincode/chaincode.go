@@ -17,7 +17,7 @@ type SimpleChaincode struct {
 var contractIndexStr = "_contractindex"				//name for the key/value that will store a list of all known contracts
 
 type Contract struct{
-	ID string `json:"id"`					
+	Name string `json:"name"`					
 	StartDate string `json:"startdate"`
 	EndDate string `json:"enddate"`
 	Location string `json:"location"`
@@ -211,7 +211,7 @@ func (t *SimpleChaincode) init_contract(stub shim.ChaincodeStubInterface, args [
 		return nil, errors.New("Incorrect number of arguments. Expecting 4")
 	}
 	fmt.Println("- start init contract")
-	id := args[0]
+	name := args[0]
 	startdate := args[1]
 	enddate := args[2]
 	location := args[3]
@@ -226,15 +226,15 @@ func (t *SimpleChaincode) init_contract(stub shim.ChaincodeStubInterface, args [
 	}
 	res := Contract{}
 	json.Unmarshal(contractAsBytes, &res)
-	if res.ID == id{
+	if res.Name == name{
 		fmt.Println("This contract arleady exists: " + id)
 		fmt.Println(res);
 		return nil, errors.New("This contract arleady exists")				//all stop a contract by this name exists
 	}
 	
 	//build the contract json string manually
-	str := `{"id": "` + id + `", "startdate": "` + startdate + `", "enddate": "` + enddate + `", "location": "` + location + `", "text": "` + text + `", "party1": "` + party1 + `", "party2": "` + party2 + `"}`
-	err = stub.PutState(id, []byte(str))									//store contract with id as key
+	str := `{"name": "` + name + `", "startdate": "` + startdate + `", "enddate": "` + enddate + `", "location": "` + location + `", "text": "` + text + `", "party1": "` + party1 + `", "party2": "` + party2 + `"}`
+	err = stub.PutState(name, []byte(str))									//store contract with id as key
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +248,7 @@ func (t *SimpleChaincode) init_contract(stub shim.ChaincodeStubInterface, args [
 	json.Unmarshal(contractsAsBytes, &contractIndex)							//un stringify it aka JSON.parse()
 	
 	//append
-	contractIndex = append(contractIndex, id)									//add contract name to index list
+	contractIndex = append(contractIndex, name)									//add contract name to index list
 	fmt.Println("! contract index: ", contractIndex)
 	jsonAsBytes, _ := json.Marshal(contractIndex)
 	err = stub.PutState(contractIndexStr, jsonAsBytes)						//store name of contract
