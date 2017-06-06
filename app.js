@@ -21,14 +21,11 @@ var port = setup.SERVER.PORT;
 app.use(compression());
 app.use(morgan('dev'));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded()); 
-app.use('/cc/summary', serve_static(path.join(__dirname, 'cc_summaries')) );												//for chaincode investigator
+app.use(bodyParser.urlencoded()); 											
 
 app.options('*', cors());
 app.use(cors());
 
-
-///////////  Configure Webserver  ///////////
 app.use(function(req, res, next){
 	var keys;
 	console.log('------------------------------------------ incoming request ------------------------------------------');
@@ -47,6 +44,10 @@ var router = express.Router();
 
 router.get('/', function(req, res) {
     res.json({ message: 'This is a webapp' });   
+});
+
+router.get('/chainstats', function(req, res) {
+    ibc.chain_stats(cb_chainstats);   
 });
 
 router.route('/create')
@@ -159,6 +160,7 @@ app.use(function(err, req, res, next) {														// = development error hand
 	
 	function cb_invoked(e, a){
 		console.log('response: ', e, a);
+		sendMsg(a);
 	}
 	
 	function cb_chainstats(e, chain_stats){
