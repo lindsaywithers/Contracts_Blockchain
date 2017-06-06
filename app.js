@@ -245,9 +245,33 @@ router.get('/chainstats', function(req, res) {
 });
 
 router.route('/create').post(function(req, res) {
-	chaincode.invoke.init_contract([req.body.name, req.body.startdate, req.body.enddate, req.body.location, req.body.text, req.body.party1, req.body.party2 ], cb_invoked)
-	function cb_invoked(e, a){
+	chaincode.invoke.init_contract([req.body.name, req.body.startdate, req.body.enddate, req.body.location, req.body.text, req.body.party1, req.body.party2 ], retCall)
+	function retCall(e, a){
 		console.log('Blockchain created entry: ', e, a);
+		res.json(a);
+	}
+});
+
+router.route('/index').post(function(req, res) {
+	chaincode.query.read(['_contractindex'], retCall)
+	function retCall(e, a){
+		console.log('Index returns: ', e, a);
+		res.json(a);
+	}
+});
+
+router.route('/delete').post(function(req, res) {
+	chaincode.invoke.delete([req.body.name], retCall)
+	function retCall(e, a){
+		console.log('Blockchain returns: ', e, a);
+		res.json(a);
+	}
+});
+
+router.route('/read').post(function(req, res) {
+	chaincode.query.read(['req.body.name'], retCall)
+	function retCall(e, a){
+		console.log('Blockchain returns: ', e, a);
 		res.json(a);
 	}
 });
@@ -267,41 +291,6 @@ app.use(function(err, req, res, next) {														// = development error hand
 	if(req.bag.error.status == 404) req.bag.error.msg = 'Sorry, I cannot locate that file';
 	res.render('template/error', {bag:req.bag});
 });
-
-
-	/*																				//only look at messages for part 2
-		if(data.type == 'create'){
-			console.log('its a create!');
-			if(data.name && data.color && data.size && data.user){
-				chaincode.invoke.init_contract([data.name, data.color, data.size, data.user], cb_invoked);	//create a new contract
-			}
-		}
-		else if(data.type == 'get'){
-			console.log('get contracts msg');
-			chaincode.query.read(['_contractindex'], cb_got_index);
-		}
-		else if(data.type == 'transfer'){
-			console.log('transfering msg');
-			if(data.name && data.user){
-				chaincode.invoke.set_user([data.name, data.user]);
-			}
-		}
-		else if(data.type == 'remove'){
-			console.log('removing msg');
-			if(data.name){
-				chaincode.invoke.delete([data.name]);
-			}
-		}
-		else if(data.type == 'chainstats'){
-			console.log('chainstats msg');
-			ibc.chain_stats(cb_chainstats);
-		}
-		
-		
-		*/
-
-	
-
 
 
 // ============================================================================================================================
