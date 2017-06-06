@@ -104,7 +104,7 @@ function cb_got_trades(e, trades){
 
 function sendMsg(json){
 	console.log('Returning webservice message: ', JSON.stringify(json));
-	return JSON.stringify(json);
+	return json;
 }
 
 if(process.env.VCAP_SERVICES){																	//load from vcap, search for service, 1 of the 3 should be found...
