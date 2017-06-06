@@ -8,7 +8,6 @@ var compression = require('compression');
 var serve_static = require('serve-static');
 var path = require('path');
 var morgan = require('morgan');
-var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var http = require('http');
 var app = express();
@@ -16,24 +15,15 @@ var url = require('url');
 var setup = require('./setup');
 var fs = require('fs');
 var cors = require('cors');
-
-//// Set Server Parameters ////
 var host = setup.SERVER.HOST;
 var port = setup.SERVER.PORT;
 
-////////  Pathing and Module Setup  ////////
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-app.engine('.html', require('jade').__express);
 app.use(compression());
 app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded()); 
-app.use(cookieParser());
 app.use('/cc/summary', serve_static(path.join(__dirname, 'cc_summaries')) );												//for chaincode investigator
-app.use( serve_static(path.join(__dirname, 'public')) );
 
-// Enable CORS preflight across the board.
 app.options('*', cors());
 app.use(cors());
 
@@ -43,8 +33,6 @@ app.use(function(req, res, next){
 	var keys;
 	console.log('------------------------------------------ incoming request ------------------------------------------');
 	console.log('New ' + req.method + ' request for', req.url);
-	req.bag = {};																			//create object for my stuff
-	req.bag.session = req.session;
 	
 	var url_parts = url.parse(req.url, true);
 	req.parameters = url_parts.query;
@@ -55,12 +43,19 @@ app.use(function(req, res, next){
 	next();
 });
 
-//// Router ////
-app.use('/', require('./routes/site_router'));
+var router = express.Router(); 
 
-////////////////////////////////////////////
-////////////// Error Handling //////////////
-////////////////////////////////////////////
+router.get('/', function(req, res) {
+    res.json({ message: 'This is a webapp' });   
+});
+
+router.route('/create')
+    .post(function(req, res) {
+          chaincode.invoke.init_marble([Math.random(), "blue", "xsmall", "garrett"], cb_invoked);
+    });
+
+app.use('/api', router);
+
 app.use(function(req, res, next) {
 	var err = new Error('Not Found');
 	err.status = 404;
@@ -76,6 +71,144 @@ app.use(function(err, req, res, next) {														// = development error hand
 });
 
 
+	/*																				//only look at messages for part 2
+		if(data.type == 'create'){
+			console.log('its a create!');
+			if(data.name && data.color && data.size && data.user){
+				chaincode.invoke.init_marble([data.name, data.color, data.size, data.user], cb_invoked);	//create a new marble
+			}
+		}
+		else if(data.type == 'get'){
+			console.log('get marbles msg');
+			chaincode.query.read(['_marbleindex'], cb_got_index);
+		}
+		else if(data.type == 'transfer'){
+			console.log('transfering msg');
+			if(data.name && data.user){
+				chaincode.invoke.set_user([data.name, data.user]);
+			}
+		}
+		else if(data.type == 'remove'){
+			console.log('removing msg');
+			if(data.name){
+				chaincode.invoke.delete([data.name]);
+			}
+		}
+		else if(data.type == 'chainstats'){
+			console.log('chainstats msg');
+			ibc.chain_stats(cb_chainstats);
+		}
+		else if(data.type == 'open_trade'){
+			console.log('open_trade msg');
+			if(!data.willing || data.willing.length < 0){
+				console.log('error, "willing" is empty');
+			}
+			else if(!data.want){
+				console.log('error, "want" is empty');
+			}
+			else{
+				var args = [data.user, data.want.color, data.want.size];
+				for(var i in data.willing){
+					args.push(data.willing[i].color);
+					args.push(data.willing[i].size);
+				}
+				chaincode.invoke.open_trade(args);
+			}
+		}
+		else if(data.type == 'get_open_trades'){
+			console.log('get open trades msg');
+			chaincode.query.read(['_opentrades'], cb_got_trades);
+		}
+		else if(data.type == 'perform_trade'){
+			console.log('perform trade msg');
+			chaincode.invoke.perform_trade([data.id, data.closer.user, data.closer.name, data.opener.user, data.opener.color, data.opener.size]);
+		}
+		else if(data.type == 'remove_trade'){
+			console.log('remove trade msg');
+			chaincode.invoke.remove_trade([data.id]);
+		}
+		
+		*/
+
+	function cb_got_index(e, index){
+		if(e != null) console.log('[ws error] did not get marble index:', e);
+		else{
+			try{
+				var json = JSON.parse(index);
+				for(var i in json){
+					console.log('!', i, json[i]);
+					chaincode.query.read([json[i]], cb_got_marble);												//iter over each, read their values
+				}
+			}
+			catch(e){
+				console.log('[ws error] could not parse response', e);
+			}
+		}
+	}
+	
+
+	function cb_got_marble(e, marble){
+		if(e != null) console.log('[ws error] did not get marble:', e);
+		else {
+			try{
+				sendMsg({msg: 'marbles', marble: JSON.parse(marble)});
+			}
+			catch(e){}
+		}
+	}
+	
+	function cb_invoked(e, a){
+		console.log('response: ', e, a);
+	}
+	
+	function cb_chainstats(e, chain_stats){
+		if(chain_stats && chain_stats.height){
+			chain_stats.height = chain_stats.height - 1;								//its 1 higher than actual height
+			var list = [];
+			for(var i = chain_stats.height; i >= 1; i--){								//create a list of heights we need
+				list.push(i);
+				if(list.length >= 8) break;
+			}
+			list.reverse();																//flip it so order is correct in UI
+			async.eachLimit(list, 1, function(block_height, cb) {						//iter through each one, and send it
+				ibc.block_stats(block_height, function(e, stats){
+					if(e == null){
+						stats.height = block_height;
+						sendMsg({msg: 'chainstats', e: e, chainstats: chain_stats, blockstats: stats});
+					}
+					cb(null);
+				});
+			}, function() {
+			});
+		}
+	}
+	
+	function cb_got_trades(e, trades){
+		if(e != null) console.log('[ws error] did not get open trades:', e);
+		else {
+			try{
+				trades = JSON.parse(trades);
+				if(trades && trades.open_trades){
+					sendMsg({msg: 'open_trades', open_trades: trades.open_trades});
+				}
+			}
+			catch(e){}
+		}
+	}
+
+	function sendMsg(json){
+		if(ws){
+			try{
+				res.json(JSON.stringify(json));
+			}
+			catch(e){
+				console.log('Error', e);
+			}
+		}
+	}
+
+
+
 // ============================================================================================================================
 // 														Launch Webserver
 // ============================================================================================================================
@@ -84,15 +217,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 process.env.NODE_ENV = 'production';
 server.timeout = 240000;																							// Ta-da.
 console.log('------------------------------------------ Server Up - ' + host + ':' + port + ' ------------------------------------------');
-if(process.env.PRODUCTION) console.log('Running using Production settings');
-else console.log('Running using Developer settings');
 
-
-
-var part1 = require('./utils/ws_part1');														//websocket message processing for part 1
-var part2 = require('./utils/ws_part2');														//websocket message processing for part 2
-var ws = require('ws');																			//websocket mod
-var wss = {};
 var Ibc1 = require('ibm-blockchain-js');														//rest based SDK for ibm blockchain
 var ibc = new Ibc1();
 var peers = null;
@@ -168,10 +293,6 @@ ibc.load(options, function (err, cc){														//parse/load chaincode, respo
 	}
 	else{
 		chaincode = cc;
-		part1.setup(ibc, cc);																//pass the cc obj to part 1 node code
-		part2.setup(ibc, cc);																//pass the cc obj to part 2 node code
-
-		// ---- To Deploy or Not to Deploy ---- //
 		if(!cc.details.deployed_name || cc.details.deployed_name === ''){					//yes, go deploy
 			cc.deploy('init', ['99'], {delay_ms: 30000}, function(e){ 						//delay_ms is milliseconds to wait after deploy for conatiner to start, 50sec recommended
 				check_if_deployed(e, 1);
@@ -230,41 +351,12 @@ function check_if_deployed(e, attempt){
 // ============================================================================================================================
 function cb_deployed(e){
 	if(e != null){
-		//look at tutorial_part1.md in the trouble shooting section for help
 		console.log('! looks like a deploy error, holding off on the starting the socket\n', e);
 		if(!process.error) process.error = {type: 'deploy', msg: e.details};
 	}
 	else{
 		console.log('------------------------------------------ Websocket Up ------------------------------------------');
-		
-		wss = new ws.Server({server: server});												//start the websocket now
-		wss.on('connection', function connection(ws) {
-			ws.on('message', function incoming(message) {
-				console.log('received ws msg:', message);
-				try{
-					var data = JSON.parse(message);
-					part1.process_msg(ws, data);											//pass the websocket msg to part 1 processing
-					part2.process_msg(ws, data);											//pass the websocket msg to part 2 processing
-				}
-				catch(e){
-					console.log('ws message error', e);
-				}
-			});
-			
-			ws.on('error', function(e){console.log('ws error', e);});
-			ws.on('close', function(){console.log('ws closed');});
-		});
-		
-		wss.broadcast = function broadcast(data) {											//send to all connections
-			wss.clients.forEach(function each(client) {
-				try{
-					client.send(JSON.stringify(data));
-				}
-				catch(e){
-					console.log('error broadcast ws', e);
-				}
-			});
-		};
+
 		
 		// ========================================================
 		// Monitor the height of the blockchain
@@ -273,7 +365,7 @@ function cb_deployed(e){
 			if(chain_stats && chain_stats.height){
 				console.log('hey new block, lets refresh and broadcast to all', chain_stats.height-1);
 				ibc.block_stats(chain_stats.height - 1, cb_blockstats);
-				wss.broadcast({msg: 'reset'});
+				//wss.broadcast({msg: 'reset'});
 				chaincode.query.read(['_marbleindex'], cb_got_index);
 				chaincode.query.read(['_opentrades'], cb_got_trades);
 			}
@@ -284,7 +376,7 @@ function cb_deployed(e){
 				else {
 					chain_stats.height = chain_stats.height - 1;							//its 1 higher than actual height
 					stats.height = chain_stats.height;										//copy
-					wss.broadcast({msg: 'chainstats', e: e, chainstats: chain_stats, blockstats: stats});
+					//wss.broadcast({msg: 'chainstats', e: e, chainstats: chain_stats, blockstats: stats});
 				}
 			}
 			
@@ -310,7 +402,7 @@ function cb_deployed(e){
 				if(e != null) console.log('marble error:', e);
 				else {
 					try{
-						wss.broadcast({msg: 'marbles', marble: JSON.parse(marble)});
+						//wss.broadcast({msg: 'marbles', marble: JSON.parse(marble)});
 					}
 					catch(e){
 						console.log('marble msg error', e);
@@ -325,7 +417,7 @@ function cb_deployed(e){
 					try{
 						trades = JSON.parse(trades);
 						if(trades && trades.open_trades){
-							wss.broadcast({msg: 'open_trades', open_trades: trades.open_trades});
+							//wss.broadcast({msg: 'open_trades', open_trades: trades.open_trades});
 						}
 					}
 					catch(e){
