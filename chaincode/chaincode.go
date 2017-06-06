@@ -220,14 +220,14 @@ func (t *SimpleChaincode) init_contract(stub shim.ChaincodeStubInterface, args [
 	party2 := args[6]
 
 	//check if contract already exists
-	contractAsBytes, err := stub.GetState(id)
+	contractAsBytes, err := stub.GetState(name)
 	if err != nil {
 		return nil, errors.New("Failed to get contract name")
 	}
 	res := Contract{}
 	json.Unmarshal(contractAsBytes, &res)
 	if res.Name == name{
-		fmt.Println("This contract arleady exists: " + id)
+		fmt.Println("This contract arleady exists: " + name)
 		fmt.Println(res);
 		return nil, errors.New("This contract arleady exists")				//all stop a contract by this name exists
 	}
