@@ -36,13 +36,13 @@ app.use(cors());
 
 
 function cb_got_index(e, index){
-	if(e != null) console.log('[ws error] did not get marble index:', e);
+	if(e != null) console.log('[ws error] did not get contract index:', e);
 	else{
 		try{
 			var json = JSON.parse(index);
 			for(var i in json){
 				console.log('!', i, json[i]);
-				chaincode.query.read([json[i]], cb_got_marble);												//iter over each, read their values
+				chaincode.query.read([json[i]], cb_got_contract);												//iter over each, read their values
 			}
 		}
 		catch(e){
@@ -52,11 +52,11 @@ function cb_got_index(e, index){
 }
 
 
-function cb_got_marble(e, marble){
-	if(e != null) console.log('[ws error] did not get marble:', e);
+function cb_got_contract(e, contract){
+	if(e != null) console.log('[ws error] did not get contract:', e);
 	else {
 		try{
-			return sendMsg({msg: 'marbles', marble: JSON.parse(marble)});
+			return sendMsg({msg: 'contracts', contract: JSON.parse(contract)});
 		}
 		catch(e){}
 	}
@@ -199,14 +199,14 @@ function check_if_deployed(e, attempt){
 	}
 	else{
 		console.log('[preflight check]', attempt, ': testing if chaincode is ready');
-		chaincode.query.read(['_marbleindex'], function(err, resp){
+		chaincode.query.read(['_contractindex'], function(err, resp){
 			var cc_deployed = false;
 			try{
 				if(err == null){															//no errors is good, but can't trust that alone
-					if(resp === 'null') cc_deployed = true;									//looks alright, brand new, no marbles yet
+					if(resp === 'null') cc_deployed = true;									//looks alright, brand new, no contracts yet
 					else{
 						var json = JSON.parse(resp);
-						if(json.constructor === Array) cc_deployed = true;					//looks alright, we have marbles
+						if(json.constructor === Array) cc_deployed = true;					//looks alright, we have contracts
 					}
 				}
 			}
@@ -238,7 +238,7 @@ function cb_deployed(e){
 				console.log('hey new block, lets refresh and broadcast to all', chain_stats.height-1);
 				ibc.block_stats(chain_stats.height - 1, cb_blockstats);
 				//wss.broadcast({msg: 'reset'});
-				chaincode.query.read(['_marbleindex'], cb_got_index);
+				chaincode.query.read(['_contractindex'], cb_got_index);
 				chaincode.query.read(['_opentrades'], cb_got_trades);
 			}
 			
@@ -253,30 +253,30 @@ function cb_deployed(e){
 			}
 
 			function cb_got_index(e, index){
-				if(e != null) console.log('marble index error:', e);
+				if(e != null) console.log('contract index error:', e);
 				else{
 					try{
 						var json = JSON.parse(index);
 						for(var i in json){
 							console.log('!', i, json[i]);
-							chaincode.query.read([json[i]], cb_got_marble);					//iter over each, read their values
+							chaincode.query.read([json[i]], cb_got_contract);					//iter over each, read their values
 						}
 					}
 					catch(e){
-						console.log('marbles index msg error:', e);
+						console.log('contracts index msg error:', e);
 					}
 				}
 			}
 			
-			//call back for getting a marble, lets send a message
-			function cb_got_marble(e, marble){
-				if(e != null) console.log('marble error:', e);
+			//call back for getting a contract, lets send a message
+			function cb_got_contract(e, contract){
+				if(e != null) console.log('contract error:', e);
 				else {
 					try{
-						//wss.broadcast({msg: 'marbles', marble: JSON.parse(marble)});
+						//wss.broadcast({msg: 'contracts', contract: JSON.parse(contract)});
 					}
 					catch(e){
-						console.log('marble msg error', e);
+						console.log('contract msg error', e);
 					}
 				}
 			}
@@ -326,7 +326,7 @@ router.get('/chainstats', function(req, res) {
 });
 
 router.route('/create').post(function(req, res) {
-	chaincode.invoke.init_marble([Math.random().toString(), "blue", "xsmall", "garrett"], cb_invoked)
+	chaincode.invoke.init_contract([Math.random().toString(), "blue", "xsmall", "garrett"], cb_invoked)
 	function cb_invoked(e, a){
 		console.log('Blockchain created entry: ', e, a);
 		res.json(a);
@@ -354,12 +354,12 @@ app.use(function(err, req, res, next) {														// = development error hand
 		if(data.type == 'create'){
 			console.log('its a create!');
 			if(data.name && data.color && data.size && data.user){
-				chaincode.invoke.init_marble([data.name, data.color, data.size, data.user], cb_invoked);	//create a new marble
+				chaincode.invoke.init_contract([data.name, data.color, data.size, data.user], cb_invoked);	//create a new contract
 			}
 		}
 		else if(data.type == 'get'){
-			console.log('get marbles msg');
-			chaincode.query.read(['_marbleindex'], cb_got_index);
+			console.log('get contracts msg');
+			chaincode.query.read(['_contractindex'], cb_got_index);
 		}
 		else if(data.type == 'transfer'){
 			console.log('transfering msg');
@@ -421,7 +421,3 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 process.env.NODE_ENV = 'production';
 server.timeout = 240000;																							// Ta-da.
 console.log('------------------------------------------ Server Up - ' + host + ':' + port + ' ------------------------------------------');
-
-
-
-
