@@ -215,7 +215,7 @@ function cb_deployed(e){
 		if(!process.error) process.error = {type: 'deploy', msg: e.details};
 	}
 	else{
-		console.log('Deployed Sucessfully\n';
+		console.log('Deployed Sucessfully\n');
 	}
 }
 
