@@ -154,7 +154,7 @@ var options = 	{
 					chaincode:{
 						zip_url: 'https://github.com/garrettrowe/Contracts_Blockchain/archive/master.zip',
 						unzip_dir: 'Contracts_Blockchain-master/chaincode',													//subdirectroy name of chaincode after unzipped
-						git_url: 'Contracts_Blockchain/chaincode'
+						git_url: 'https://github.com/garrettrowe/Contracts_Blockchain/'
 					}
 				};
 
