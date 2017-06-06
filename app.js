@@ -62,10 +62,7 @@ function cb_got_marble(e, marble){
 	}
 }
 
-function cb_invoked(e, a){
-	console.log('Blockchain created entry: ', e, a);
-	return sendMsg(a);
-}
+
 
 function cb_chainstats(e, chain_stats){
 	if(chain_stats && chain_stats.height){
@@ -329,7 +326,11 @@ router.get('/chainstats', function(req, res) {
 });
 
 router.route('/create').post(function(req, res) {
-    res.json(chaincode.invoke.init_marble([Math.random().toString(), "blue", "xsmall", "garrett"], cb_invoked));
+	chaincode.invoke.init_marble([Math.random().toString(), "blue", "xsmall", "garrett"], cb_invoked)
+	function cb_invoked(e, a){
+		console.log('Blockchain created entry: ', e, a);
+		res.json(a);
+	}
 });
 
 app.use('/api', router);
