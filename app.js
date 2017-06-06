@@ -51,7 +51,7 @@ router.get('/', function(req, res) {
 
 router.route('/create')
     .post(function(req, res) {
-          chaincode.invoke.init_marble([Math.random(), "blue", "xsmall", "garrett"], cb_invoked);
+          chaincode.invoke.init_marble([Math.random().toString(), "blue", "xsmall", "garrett"], cb_invoked);
     });
 
 app.use('/api', router);
