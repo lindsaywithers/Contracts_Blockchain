@@ -86,19 +86,6 @@ function cb_chainstats(e, chain_stats){
 	}
 }
 
-function cb_got_trades(e, trades){
-	if(e != null) console.log('[ws error] did not get open trades:', e);
-	else {
-		try{
-			trades = JSON.parse(trades);
-			if(trades && trades.open_trades){
-				return sendMsg({msg: 'open_trades', open_trades: trades.open_trades});
-			}
-		}
-		catch(e){}
-	}
-}
-
 function sendMsg(json){
 	console.log('Returning webservice message: ', JSON.stringify(json));
 	return json;
@@ -148,24 +135,21 @@ function detect_tls_or_not(peer_array){
 // configure options for ibm-blockchain-js sdk
 // ==================================
 var options = 	{
-					network:{
-						peers: [peers[0]],																	//lets only use the first peer! since we really don't need any more than 1
-						users: prefer_type1_users(users),													//dump the whole thing, sdk will parse for a good one
-						options: {
-									quiet: true, 															//detailed debug messages on/off true/false
-									tls: detect_tls_or_not(peers), 											//should app to peer communication use tls?
-									maxRetry: 1																//how many times should we retry register before giving up
-								}
-					},
-					chaincode:{
-						zip_url: 'https://github.com/garrettrowe/Contracts_Blockchain/archive/master.zip',
-						unzip_dir: 'Contracts_Blockchain-master/chaincode',													//subdirectroy name of chaincode after unzipped
-						git_url: 'https://github.com/garrettrowe/Contracts_Blockchain/chaincode'
-					}
-				};
-
-
-// ---- Fire off SDK ---- //
+	network:{
+		peers: [peers[0]],																	//lets only use the first peer! since we really don't need any more than 1
+		users: prefer_type1_users(users),													//dump the whole thing, sdk will parse for a good one
+		options: {
+				quiet: true, 															//detailed debug messages on/off true/false
+				tls: detect_tls_or_not(peers), 											//should app to peer communication use tls?
+				maxRetry: 1																//how many times should we retry register before giving up
+			}
+	},
+	chaincode:{
+		zip_url: 'https://github.com/garrettrowe/Contracts_Blockchain/archive/master.zip',
+		unzip_dir: 'Contracts_Blockchain-master/chaincode',													//subdirectroy name of chaincode after unzipped
+		git_url: 'https://github.com/garrettrowe/Contracts_Blockchain/chaincode'
+	}
+};
 																	//sdk will populate this var in time, lets give it high scope by creating it here
 ibc.load(options, function (err, cc){														//parse/load chaincode, response has chaincode functions!
 	if(err != null){
@@ -211,8 +195,6 @@ function check_if_deployed(e, attempt){
 				}
 			}
 			catch(e){}																		//anything nasty goes here
-
-			// ---- Are We Ready? ---- //
 			if(!cc_deployed){
 				console.log('[preflight check]', attempt, ': failed, trying again');
 				setTimeout(function(){
@@ -229,74 +211,11 @@ function check_if_deployed(e, attempt){
 
 function cb_deployed(e){
 	if(e != null){
-		console.log('! looks like a deploy error, holding off on the starting the socket\n', e);
+		console.log('Deploy error: \n', e);
 		if(!process.error) process.error = {type: 'deploy', msg: e.details};
 	}
 	else{
-		ibc.monitor_blockheight(function(chain_stats){										//there is a new block, lets refresh everything that has a state
-			if(chain_stats && chain_stats.height){
-				console.log('hey new block, lets refresh and broadcast to all', chain_stats.height-1);
-				ibc.block_stats(chain_stats.height - 1, cb_blockstats);
-				//wss.broadcast({msg: 'reset'});
-				chaincode.query.read(['_contractindex'], cb_got_index);
-				chaincode.query.read(['_opentrades'], cb_got_trades);
-			}
-			
-			//got the block's stats, lets send the statistics
-			function cb_blockstats(e, stats){
-				if(e != null) console.log('blockstats error:', e);
-				else {
-					chain_stats.height = chain_stats.height - 1;							//its 1 higher than actual height
-					stats.height = chain_stats.height;										//copy
-					//wss.broadcast({msg: 'chainstats', e: e, chainstats: chain_stats, blockstats: stats});
-				}
-			}
-
-			function cb_got_index(e, index){
-				if(e != null) console.log('contract index error:', e);
-				else{
-					try{
-						var json = JSON.parse(index);
-						for(var i in json){
-							console.log('!', i, json[i]);
-							chaincode.query.read([json[i]], cb_got_contract);					//iter over each, read their values
-						}
-					}
-					catch(e){
-						console.log('contracts index msg error:', e);
-					}
-				}
-			}
-			
-			//call back for getting a contract, lets send a message
-			function cb_got_contract(e, contract){
-				if(e != null) console.log('contract error:', e);
-				else {
-					try{
-						//wss.broadcast({msg: 'contracts', contract: JSON.parse(contract)});
-					}
-					catch(e){
-						console.log('contract msg error', e);
-					}
-				}
-			}
-			
-			//call back for getting open trades, lets send the trades
-			function cb_got_trades(e, trades){
-				if(e != null) console.log('trade error:', e);
-				else {
-					try{
-						trades = JSON.parse(trades);
-						if(trades && trades.open_trades){
-							//wss.broadcast({msg: 'open_trades', open_trades: trades.open_trades});
-						}
-					}
-					catch(e){
-						console.log('trade msg error', e);
-					}
-				}
-			}
-		});
+		console.log('Deployed Sucessfully\n';
 	}
 }
 
@@ -326,7 +245,7 @@ router.get('/chainstats', function(req, res) {
 });
 
 router.route('/create').post(function(req, res) {
-	chaincode.invoke.init_contract([Math.random().toString(), "blue", "xsmall", "garrett"], cb_invoked)
+	chaincode.invoke.init_contract([req.body.name, req.body.startdate, req.body.enddate, req.body.location, req.body.text, req.body.party1, req.body.party2 ], cb_invoked)
 	function cb_invoked(e, a){
 		console.log('Blockchain created entry: ', e, a);
 		res.json(a);
@@ -377,35 +296,7 @@ app.use(function(err, req, res, next) {														// = development error hand
 			console.log('chainstats msg');
 			ibc.chain_stats(cb_chainstats);
 		}
-		else if(data.type == 'open_trade'){
-			console.log('open_trade msg');
-			if(!data.willing || data.willing.length < 0){
-				console.log('error, "willing" is empty');
-			}
-			else if(!data.want){
-				console.log('error, "want" is empty');
-			}
-			else{
-				var args = [data.user, data.want.color, data.want.size];
-				for(var i in data.willing){
-					args.push(data.willing[i].color);
-					args.push(data.willing[i].size);
-				}
-				chaincode.invoke.open_trade(args);
-			}
-		}
-		else if(data.type == 'get_open_trades'){
-			console.log('get open trades msg');
-			chaincode.query.read(['_opentrades'], cb_got_trades);
-		}
-		else if(data.type == 'perform_trade'){
-			console.log('perform trade msg');
-			chaincode.invoke.perform_trade([data.id, data.closer.user, data.closer.name, data.opener.user, data.opener.color, data.opener.size]);
-		}
-		else if(data.type == 'remove_trade'){
-			console.log('remove trade msg');
-			chaincode.invoke.remove_trade([data.id]);
-		}
+		
 		
 		*/
 
