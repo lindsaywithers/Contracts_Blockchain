@@ -175,16 +175,10 @@ var options = 	{
 					chaincode:{
 						zip_url: 'https://github.com/garrettrowe/Contracts_Blockchain/archive/master.zip',
 						unzip_dir: 'Contracts_Blockchain/chaincode',													//subdirectroy name of chaincode after unzipped
-						//git_url: 'http://gopkg.in/ibm-blockchain/marbles.v2/chaincode',						//GO get http url
-					
-						//hashed cc name from prev deployment, comment me out to always deploy, uncomment me when its already deployed to skip deploying again
-						//deployed_name: '16e655c0fce6a9882896d3d6d11f7dcd4f45027fd4764004440ff1e61340910a9d67685c4bb723272a497f3cf428e6cf6b009618612220e1471e03b6c0aa76cb'
+						git_url: 'https://github.com/garrettrowe/Contracts_Blockchain/chaincode',						//GO get http url
 					}
 				};
-if(process.env.VCAP_SERVICES){
-	console.log('\n[!] looks like you are in bluemix, I am going to clear out the deploy_name so that it deploys new cc.\n[!] hope that is ok budddy\n');
-	options.chaincode.deployed_name = '';
-}
+
 
 // ---- Fire off SDK ---- //
 var chaincode = null;																		//sdk will populate this var in time, lets give it high scope by creating it here
