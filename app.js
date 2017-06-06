@@ -63,7 +63,7 @@ function cb_got_marble(e, marble){
 }
 
 function cb_invoked(e, a){
-	console.log('response: ', e, a);
+	console.log('Blockchain created entry: ', e, a);
 	return sendMsg(a);
 }
 
@@ -103,6 +103,7 @@ function cb_got_trades(e, trades){
 }
 
 function sendMsg(json){
+	console.log('Returning webservice message: ', JSON.stringify(json));
 	return JSON.stringify(json);
 }
 
