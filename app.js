@@ -59,7 +59,7 @@ if (process.env.VCAP_SERVICES) {
 }
 
 var graphD = new GDS(GDScreds);
-var graph = "contractgdb";
+var graph = "contractgraphdb";
 graphD.session(function(err, data) {
     if (err) {
         console.log(err);
