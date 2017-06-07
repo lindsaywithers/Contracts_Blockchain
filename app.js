@@ -60,7 +60,7 @@ if(process.env.VCAP_SERVICES){																	//load from vcap, search for serv
 }
 
 var graphD = new GDS(GDScreds);
-var graph = "contractblockchain";
+var graph = "contractgraph";
 graphD.session(function(err, data) {
   if (err) {
     console.log(err);
