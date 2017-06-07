@@ -277,7 +277,7 @@ func (t *SimpleChaincode) set_user(stub shim.ChaincodeStubInterface, args []stri
 	}
 	res := Contract{}
 	json.Unmarshal(contractAsBytes, &res)										//un stringify it aka JSON.parse()
-	res.Party1 = args[1]														//change the user
+	res.Company1 = args[1]														//change the user
 	
 	jsonAsBytes, _ := json.Marshal(res)
 	err = stub.PutState(args[0], jsonAsBytes)								//rewrite the contract with id as key
