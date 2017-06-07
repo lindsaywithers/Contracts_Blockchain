@@ -79,7 +79,7 @@ graphD.graphs().get(function(err, data){
   console.log("Retrieved Graph:" + data);
 });
 
-graphD.graphs().set(graph, function(err, data){
+graphD.graphs().set(graph.graphId, function(err, data){
   if (err) {
     console.log("Graph error:" + err);
   }
