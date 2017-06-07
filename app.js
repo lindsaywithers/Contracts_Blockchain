@@ -279,14 +279,14 @@ router.route('/querylocation').post(function(req, res) {
 	  "gremlin": "graph.traversal().V().has('location', location).bothE().outV();",
 	  "bindings": { "location": req.body.location }
 	}
-	graphD.gremlin(gremlinq, function(err,data){
+	graphD.gremlin(gremlinq, function(err,odata){
 	  if (err) {
 	    console.log('Error: ' + err);
 	  }
-	  console.log(JSON.stringify(data));
+	  console.log(JSON.stringify(odata));
 		var contract = null;
-		for (var i = 0, len = data.length; i < len; i++) {
-		  contract = data[i].properties[0].name[0].value;
+		for (var i = 0, len = odata.result.data.length; i < len; i++) {
+		  contract = odata.result.data[0].properties.name[0].value;
 		  console.log('Contract found: ' + contract);
 		chaincode.query.read([contract], function (e, a){
 				console.log('Blockchain returns: ', e, a);
