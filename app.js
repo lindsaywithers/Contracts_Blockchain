@@ -273,7 +273,6 @@ router.route('/read').post(function(req, res) {
 });
 
 router.route('/querylocation').post(function(req, res) {
-	var resp = {};
 	var gremlinq = {
 	  "gremlin": "graph.traversal().V().has('location', location).bothE().outV();",
 	  "bindings": { "location": req.body.location }
@@ -283,6 +282,7 @@ router.route('/querylocation').post(function(req, res) {
 	    console.log('Error: ' + err);
 	  }
 	  console.log(JSON.stringify(odata));
+		var resp = {};
 		var contract = null;
 		for (var i = 0, len = odata.result.data.length; i < len; i++) {
 		  contract = odata.result.data[0].properties.name[0].value;
@@ -292,9 +292,10 @@ router.route('/querylocation').post(function(req, res) {
 				extend(resp,a);
 			});
 		}
+		res.json({"results": resp});
 	});
 
-	res.json({"results": resp});
+	
 });
 
 
