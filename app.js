@@ -5,7 +5,6 @@
 var express = require('express');
 var session = require('express-session');
 var compression = require('compression');
-var serve_static = require('serve-static');
 var path = require('path');
 var morgan = require('morgan');
 var bodyParser = require('body-parser');
@@ -17,7 +16,7 @@ var fs = require('fs');
 var cors = require('cors');
 var host = setup.SERVER.HOST;
 var port = setup.SERVER.PORT;
-
+var extend = require('extend');
 var Ibc1 = require('ibm-blockchain-js');														//rest based SDK for ibm blockchain
 var ibc = new Ibc1();
 var peers = null;
@@ -274,7 +273,7 @@ router.route('/read').post(function(req, res) {
 });
 
 router.route('/querylocation').post(function(req, res) {
-	var resp = [];
+	var resp = {};
 	var gremlinq = {
 	  "gremlin": "graph.traversal().V().has('location', location).bothE().outV();",
 	  "bindings": { "location": req.body.location }
@@ -290,7 +289,7 @@ router.route('/querylocation').post(function(req, res) {
 		  console.log('Contract found: ' + contract);
 		chaincode.query.read([contract], function (e, a){
 				console.log('Blockchain returns: ', e, a);
-				resp.push(a);
+				extend(resp,a);
 			});
 		}
 	});
