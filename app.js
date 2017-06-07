@@ -61,7 +61,7 @@ if(process.env.VCAP_SERVICES){																	//load from vcap, search for serv
 }
 
 var graphD = new GDS(GDScreds);
-var graph = "contracts";
+var graph = "contract";
 graphD.session(function(err, data) {
   if (err) {
     console.log(err);
@@ -272,6 +272,27 @@ router.route('/read').post(function(req, res) {
 		res.json(a);
 	}
 });
+
+router.route('/querylocation').post(function(req, res) {
+	var gremlinq = {
+	  "gremlin": "graph.traversal().V().has('location', locaation).bothE().outV();",
+	  "bindings": { "location": req.body.location }
+	}
+	graphD.gremlin(gremlinq, function(err,data){
+	  if (err) {
+	    console.log('Error: ' + err);
+	  }
+	  console.log(JSON.stringify(data));
+	});
+
+	chaincode.query.read([req.body.name], retCall)
+	function retCall(e, a){
+		console.log('Blockchain returns: ', e, a);
+		res.json(a);
+	}
+});
+
+
 
 router.get('/graphinit', function(req, res) {
 var schema = {
