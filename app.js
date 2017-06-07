@@ -216,14 +216,11 @@ router.get('/chainstats', function(req, res) {
 });
 
 router.route('/create').post(function(req, res) {
-	var blockid = null;
-	chaincode.invoke.init_contract([req.body.name, req.body.startdate, req.body.enddate, req.body.location, req.body.text, req.body.party1, req.body.party2 ], retCall)
+	chaincode.invoke.init_contract([req.body.name, req.body.title, req.body.startdate, req.body.enddate, req.body.location, req.body.text, req.body.party1, req.body.party2 ], retCall)
 	function retCall(e, a){
 		console.log('Blockchain created entry: ', e, a);
-		blockid = a.id;
 	}
-	
-	console.log("preparing to write blockid " + blockid + " and hash " + md5(req.body.text));
+
 	
 	var gremlinq = {
 	  gremlin: "\
@@ -239,7 +236,7 @@ router.route('/create').post(function(req, res) {
 	    "party2": req.body.party2,
 	    "contractName": req.body.name,
 	    "hash": md5(req.body.text),
-		"blockid": blockid,
+		"blockid": req.body.title,
 		"location": req.body.location
 	  }
 	}
@@ -269,7 +266,7 @@ router.route('/delete').post(function(req, res) {
 });
 
 router.route('/read').post(function(req, res) {
-	chaincode.query.read(['req.body.name'], retCall)
+	chaincode.query.read([req.body.name], retCall)
 	function retCall(e, a){
 		console.log('Blockchain returns: ', e, a);
 		res.json(a);
