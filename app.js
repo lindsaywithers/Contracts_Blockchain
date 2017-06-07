@@ -59,7 +59,7 @@ if (process.env.VCAP_SERVICES) {
 }
 
 var graphD = new GDS(GDScreds);
-var graph = "contractdb";
+var graph = "contractgdb";
 graphD.session(function(err, data) {
     if (err) {
         console.log(err);
@@ -233,13 +233,13 @@ router.route('/create').post(function(req, res) {
 
     var gremlinq = {
         gremlin: "\
-	def party1 =  graph.addVertex(T.label, 'company', 'name', company1);\
-	def party2 =  graph.addVertex(T.label, 'company', 'name', company2);\
-	def contract = graph.addVertex(T.label, 'contract', 'name', contractName, 'hash', hash, 'title', title);\
-	def location = graph.addVertex(T.label, 'location', 'location', location);\
-	contract.addEdge('companies', party1);\
-	contract.addEdge('companies', party2);\
-	contract.addEdge('locations', location);",
+	def company1V =  graph.addVertex(T.label, 'company', 'name', company1);\
+	def company2V =  graph.addVertex(T.label, 'company', 'name', company2);\
+	def contractV = graph.addVertex(T.label, 'contract', 'name', contractName, 'hash', hash, 'title', title);\
+	def locationV = graph.addVertex(T.label, 'location', 'location', location);\
+	contractV.addEdge('companies', company1V);\
+	contractV.addEdge('companies', company2V);\
+	contractV.addEdge('locations', locationV);",
         "bindings": {
             "company1": req.body.company1,
             "company2": req.body.company2,
