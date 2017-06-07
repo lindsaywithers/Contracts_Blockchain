@@ -274,8 +274,9 @@ router.route('/read').post(function(req, res) {
 });
 
 router.route('/querylocation').post(function(req, res) {
+	var resp = [];
 	var gremlinq = {
-	  "gremlin": "graph.traversal().V().has('location', locaation).bothE().outV();",
+	  "gremlin": "graph.traversal().V().has('location', location).bothE().outV();",
 	  "bindings": { "location": req.body.location }
 	}
 	graphD.gremlin(gremlinq, function(err,data){
@@ -283,13 +284,19 @@ router.route('/querylocation').post(function(req, res) {
 	    console.log('Error: ' + err);
 	  }
 	  console.log(JSON.stringify(data));
+		var contract = null;
+		for (var i = 0, len = data.length; i < len; i++) {
+		  contract = data[i].properties[0].name[0].value;
+		  console.log('Contract found: ' + contract);
+		chaincode.query.read([contract], retCall)
+			function retCall(e, a){
+				console.log('Blockchain returns: ', e, a);
+				resp.push(a);
+			}
+		}
 	});
 
-	chaincode.query.read([req.body.name], retCall)
-	function retCall(e, a){
-		console.log('Blockchain returns: ', e, a);
-		res.json(a);
-	}
+	res.json(resp);
 });
 
 
@@ -336,7 +343,6 @@ graphD.schema().set(schema, function(err, data){
 app.use('/api', router);
 
 app.use(function(req, res, next) {
-	var err = new Error('Not Found');
 	err.status = 404;
 	next(err);
 });
