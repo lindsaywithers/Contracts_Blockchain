@@ -223,6 +223,8 @@ router.route('/create').post(function(req, res) {
 		blockid = a.id;
 	}
 	
+	console.log("preparing to write blockid " + blockid + " and hash " + md5(req.body.text));
+	
 	var gremlinq = {
 	  gremlin: "\
 	def party1 =  graph.addVertex(T.label, 'party', 'name', party1);\
