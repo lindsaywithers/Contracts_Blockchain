@@ -59,7 +59,7 @@ if (process.env.VCAP_SERVICES) {
 }
 
 var graphD = new GDS(GDScreds);
-var graph = "contractsgraph";
+var graph = "contractdb";
 graphD.session(function(err, data) {
     if (err) {
         console.log(err);
@@ -224,7 +224,7 @@ router.get('/chainstats', function(req, res) {
 });
 
 router.route('/create').post(function(req, res) {
-    chaincode.invoke.init_contract([req.body.name, req.body.startdate, req.body.enddate, req.body.location, req.body.text, req.body.party1, req.body.party2, req.body.title], retCall)
+    chaincode.invoke.init_contract([req.body.name, req.body.startdate, req.body.enddate, req.body.location, req.body.text, req.body.company1, req.body.company2, req.body.title], retCall)
 
     function retCall(e, a) {
         console.log('Blockchain created entry: ', e, a);
@@ -233,16 +233,16 @@ router.route('/create').post(function(req, res) {
 
     var gremlinq = {
         gremlin: "\
-	def party1 =  graph.addVertex(T.label, 'party', 'name', party1);\
-	def party2 =  graph.addVertex(T.label, 'party', 'name', party2);\
+	def party1 =  graph.addVertex(T.label, 'company', 'name', company1);\
+	def party2 =  graph.addVertex(T.label, 'company', 'name', company2);\
 	def contract = graph.addVertex(T.label, 'contract', 'name', contractName, 'hash', hash, 'title', title);\
 	def location = graph.addVertex(T.label, 'location', 'location', location);\
-	contract.addEdge('parties', party1);\
-	contract.addEdge('parties', party2);\
+	contract.addEdge('companies', party1);\
+	contract.addEdge('companies', party2);\
 	contract.addEdge('locations', location);",
         "bindings": {
-            "party1": req.body.party1,
-            "party2": req.body.party2,
+            "company1": req.body.company1,
+            "company2": req.body.company2,
             "contractName": req.body.name,
             "hash": md5(req.body.text),
             "title": req.body.title,
@@ -369,7 +369,7 @@ router.get('/graphinit', function(req, res) {
                 "cardinality": "SINGLE"
             },
             {
-                "name": "party",
+                "name": "company",
                 "dataType": "String",
                 "cardinality": "SINGLE"
             },
@@ -390,7 +390,7 @@ router.get('/graphinit', function(req, res) {
             }
         ],
         "vertexLabels": [{
-                "name": "party"
+                "name": "company"
             },
             {
                 "name": "contract"
@@ -400,7 +400,7 @@ router.get('/graphinit', function(req, res) {
             }
         ],
         "edgeLabels": [{
-                "name": "parties",
+                "name": "companies",
                 "multiplicity": "MULTI"
             },
             {
@@ -421,15 +421,15 @@ router.get('/graphinit', function(req, res) {
                 "unique": false
             },
             {
-                "name": "vByParty",
-                "propertyKeys": ["party"],
+                "name": "vByCompany",
+                "propertyKeys": ["company"],
                 "composite": true,
                 "unique": false
             }
         ],
         "edgeIndexes": [{
-                "name": "eByParties",
-                "propertyKeys": ["party"],
+                "name": "eByCompanies",
+                "propertyKeys": ["company"],
                 "composite": true,
                 "unique": false
             },
