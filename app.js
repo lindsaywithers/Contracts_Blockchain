@@ -59,7 +59,7 @@ if (process.env.VCAP_SERVICES) {
 }
 
 var graphD = new GDS(GDScreds);
-var graph = "contractgraphdb";
+var graph = "graphcontracts";
 graphD.session(function(err, data) {
     if (err) {
         console.log(err);
@@ -430,13 +430,13 @@ router.get('/graphinit', function(req, res) {
         "edgeIndexes": [{
                 "name": "eByCompanies",
                 "propertyKeys": ["company"],
-                "composite": true,
+                "composite": false,
                 "unique": false
             },
             {
                 "name": "eByLocations",
                 "propertyKeys": ["location"],
-                "composite": true,
+                "composite": false,
                 "unique": false
             }
         ]
