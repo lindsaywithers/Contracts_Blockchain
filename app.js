@@ -60,7 +60,7 @@ if(process.env.VCAP_SERVICES){																	//load from vcap, search for serv
 }
 
 var graphD = new GDS(GDScreds);
-var graph = "contract";
+var graph = "contractblockchain";
 graphD.session(function(err, data) {
   if (err) {
     console.log(err);
@@ -273,6 +273,7 @@ router.route('/read').post(function(req, res) {
 });
 
 router.route('/querylocation').post(function(req, res) {
+	
 	var gremlinq = {
 	  "gremlin": "graph.traversal().V().has('location', location).bothE().outV();",
 	  "bindings": { "location": req.body.location }
@@ -289,10 +290,12 @@ router.route('/querylocation').post(function(req, res) {
 		  console.log('Contract found: ' + contract);
 		chaincode.query.read([contract], function (e, a){
 				console.log('Blockchain returns: ', e, a);
-				res.write(a);
+				res.write(JSON.stringify(a));
 				resnum ++;
-				if (resnum == odata.result.data.length)
-					res.end()
+				if (resnum == odata.result.data.length){
+					res.writeHead(200, { 'Content-Type': 'application/json' });
+					res.end();
+				}
 			});
 		}
 	});
@@ -324,8 +327,8 @@ var schema = {
   ],
   "vertexIndexes": [
     {"name": "vByContract", "propertyKeys": ["name"], "composite": true, "unique": true},
-    {"name": "vByLocation", "propertyKeys": ["location"], "composite": true, "unique": true},
-    {"name": "vByParty", "propertyKeys": ["party"], "composite": true, "unique": true}
+    {"name": "vByLocation", "propertyKeys": ["location"], "composite": true, "unique": false},
+    {"name": "vByParty", "propertyKeys": ["party"], "composite": true, "unique": false}
   ],
   "edgeIndexes" :[
     {"name": "eByParties", "propertyKeys": ["party"], "composite": true, "unique": false},
