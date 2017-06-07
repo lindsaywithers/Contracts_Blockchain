@@ -18,8 +18,6 @@ var cors = require('cors');
 var host = setup.SERVER.HOST;
 var port = setup.SERVER.PORT;
 
-var async = require('async');
-
 var Ibc1 = require('ibm-blockchain-js');														//rest based SDK for ibm blockchain
 var ibc = new Ibc1();
 var peers = null;
@@ -77,7 +75,7 @@ graphD.graphs().get(function(err, data){
   if (err) {
     console.log("Graph error:" + err);
   }
-	graph = data.graphId;
+	graph = data;
   console.log("Retrieved Graph:" + data);
 });
 
@@ -313,10 +311,6 @@ graphD.schema().set(schema, function(err, data){
   res.json(data);
 }); 
 });
-
-
-
-
 
 app.use('/api', router);
 
