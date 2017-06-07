@@ -282,17 +282,19 @@ router.route('/querylocation').post(function(req, res) {
 	    console.log('Error: ' + err);
 	  }
 	  console.log(JSON.stringify(odata));
-		var resp = {};
+		var resnum = 0;
 		var contract = null;
 		for (var i = 0, len = odata.result.data.length; i < len; i++) {
 		  contract = odata.result.data[0].properties.name[0].value;
 		  console.log('Contract found: ' + contract);
 		chaincode.query.read([contract], function (e, a){
 				console.log('Blockchain returns: ', e, a);
-				extend(resp,a);
+				res.write(a);
+				resnum ++;
+				if (resnum == odata.result.data.length)
+					res.end()
 			});
 		}
-		res.json({"results": resp});
 	});
 
 	
