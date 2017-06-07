@@ -79,6 +79,13 @@ graphD.graphs().get(function(err, data){
   console.log("Retrieved Graph:" + data);
 });
 
+graphD.graphs().set(graph, function(err, data){
+  if (err) {
+    console.log("Graph error:" + err);
+  }
+  console.log("Set active Graph:" + graph);
+});
+
 
 //filter for type1 users if we have any
 function prefer_type1_users(user_array){
