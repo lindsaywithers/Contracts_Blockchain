@@ -293,7 +293,7 @@ router.route('/querylocation').post(function(req, res) {
 			});
 		}
 	});
-
+	console.log('Extended search response: ' + resp);
 	res.json(resp);
 });
 
