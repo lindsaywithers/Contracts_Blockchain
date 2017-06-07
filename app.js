@@ -273,7 +273,7 @@ router.route('/read').post(function(req, res) {
 });
 
 router.route('/querylocation').post(function(req, res) {
-	
+	res.writeHead(200, { 'Content-Type': 'application/json' });
 	var gremlinq = {
 	  "gremlin": "graph.traversal().V().has('location', location).bothE().outV();",
 	  "bindings": { "location": req.body.location }
@@ -293,7 +293,6 @@ router.route('/querylocation').post(function(req, res) {
 				res.write(JSON.stringify(a));
 				resnum ++;
 				if (resnum == odata.result.data.length){
-					res.writeHead(200, { 'Content-Type': 'application/json' });
 					res.end();
 				}
 			});
@@ -326,7 +325,7 @@ var schema = {
     {"name": "locations", "multiplicity": "MULTI"}
   ],
   "vertexIndexes": [
-    {"name": "vByContract", "propertyKeys": ["name"], "composite": true, "unique": true},
+    {"name": "vByContract", "propertyKeys": ["name"], "composite": true, "unique": false},
     {"name": "vByLocation", "propertyKeys": ["location"], "composite": true, "unique": false},
     {"name": "vByParty", "propertyKeys": ["party"], "composite": true, "unique": false}
   ],
