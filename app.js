@@ -225,12 +225,13 @@ router.route('/create').post(function(req, res) {
 	
 	gremlin = {
 	  gremlin: "\
-	def party1 =  graph.addVertex(T.label, party, 'name', party1);\
-	def party2 =  graph.addVertex(T.label, party, 'name', party2);\
+	def party1 =  graph.addVertex(T.label, 'party', 'name', party1);\
+	def party2 =  graph.addVertex(T.label, 'party', 'name', party2);\
 	def contract = graph.addVertex(T.label, 'contract', 'name', contractName, 'hash', hash, 'blockid', blockid);\
 	def location = graph.addVertex(T.label, 'location', 'location', location);\
-	contract.addEdge('party', contract);\
-	contract.addEdge('location', location);",
+	contract.addEdge('parties', party1);\
+	contract.addEdge('parties', party2);\
+	contract.addEdge('locations', location);",
 	  "bindings": {
 	    "party1": req.body.party1,
 	    "party2": req.body.party2,
@@ -323,9 +324,7 @@ app.use(function(err, req, res, next) {														// = development error hand
 	console.log('Error Handeler -', req.url);
 	var errorCode = err.status || 500;
 	res.status(errorCode);
-	req.bag.error = {msg:err.stack, status:errorCode};
-	if(req.bag.error.status == 404) req.bag.error.msg = 'Sorry, I cannot locate that file';
-	res.render('template/error', {bag:req.bag});
+	res.json({msg:err.stack, status:errorCode});
 });
 
 
