@@ -26,6 +26,9 @@ var peers = null;
 var users = null;	
 var chaincode = null;	
 
+var GDS = require('ibm-graph-client');
+var GDScreds = null;
+
 app.use(compression());
 app.use(morgan('dev'));
 app.use(bodyParser.json());
@@ -34,80 +37,38 @@ app.use(bodyParser.urlencoded());
 app.options('*', cors());
 app.use(cors());
 
-
-function cb_got_index(e, index){
-	if(e != null) console.log('[ws error] did not get contract index:', e);
-	else{
-		try{
-			var json = JSON.parse(index);
-			for(var i in json){
-				console.log('!', i, json[i]);
-				chaincode.query.read([json[i]], cb_got_contract);												//iter over each, read their values
-			}
-		}
-		catch(e){
-			console.log('[ws error] could not parse response', e);
-		}
-	}
-}
-
-
-function cb_got_contract(e, contract){
-	if(e != null) console.log('[ws error] did not get contract:', e);
-	else {
-		try{
-			return sendMsg({msg: 'contracts', contract: JSON.parse(contract)});
-		}
-		catch(e){}
-	}
-}
-
-
-
-function cb_chainstats(e, chain_stats){
-	if(chain_stats && chain_stats.height){
-		chain_stats.height = chain_stats.height - 1;								//its 1 higher than actual height
-		var list = [];
-		for(var i = chain_stats.height; i >= 1; i--){								//create a list of heights we need
-			list.push(i);
-			if(list.length >= 8) break;
-		}
-		list.reverse();																//flip it so order is correct in UI
-		async.eachLimit(list, 1, function(block_height, cb) {						//iter through each one, and send it
-			ibc.block_stats(block_height, function(e, stats){
-				if(e == null){
-					stats.height = block_height;
-					return sendMsg({msg: 'chainstats', e: e, chainstats: chain_stats, blockstats: stats});
-				}
-				cb(null);
-			});
-		}, function() {
-		});
-	}
-}
-
-function sendMsg(json){
-	console.log('Returning webservice message: ', JSON.stringify(json));
-	return json;
-}
-
 if(process.env.VCAP_SERVICES){																	//load from vcap, search for service, 1 of the 3 should be found...
 	var servicesObject = JSON.parse(process.env.VCAP_SERVICES);
 	for(var i in servicesObject){
-		if(i.indexOf('ibm-blockchain') >= 0){													//looks close enough
-			if(servicesObject[i][0].credentials && servicesObject[i][0].credentials.peers){		//found the blob, copy it to 'peers'
+		if(i.indexOf('ibm-blockchain') >= 0){													
+			if(servicesObject[i][0].credentials && servicesObject[i][0].credentials.peers){		
 				console.log('overwritting peers, loading from a vcap service: ', i);
 				peers = servicesObject[i][0].credentials.peers;
 				if(servicesObject[i][0].credentials.users){										//user field may or maynot exist, depends on if there is membership services or not for the network
 					console.log('overwritting users, loading from a vcap service: ', i);
 					users = servicesObject[i][0].credentials.users;
 				} 
-				else users = null;																//no security
-				break;
+				else users = null;																
+			}
+		}
+		if(i.indexOf('IBM Graph') >= 0){													
+			if(servicesObject[i][0].credentials){		
+				console.log('loading graph from a vcap service: ', i);
+				GDScreds = servicesObject[i][0].credentials;
 			}
 		}
 	}
 }
+
+var graphD = new GDS(GDScreds);
+graphD.session(function(err, data) {
+  if (err) {
+    console.log(err);
+  } else {
+    graphD.config.session = data;
+    console.log("Your graph session token is " + data);
+  }
+});
 
 //filter for type1 users if we have any
 function prefer_type1_users(user_array){
