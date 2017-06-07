@@ -78,7 +78,7 @@ graphD.graphs().get(function(err, data){
     console.log("Graph error:" + err);
   }
 	graph = data.graphId;
-  console.log("Retrieved Graph:" + graph);
+  console.log("Retrieved Graph:" + data);
 });
 
 
