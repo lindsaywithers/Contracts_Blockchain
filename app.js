@@ -61,6 +61,7 @@ if(process.env.VCAP_SERVICES){																	//load from vcap, search for serv
 }
 
 var graphD = new GDS(GDScreds);
+var graph;
 graphD.session(function(err, data) {
   if (err) {
     console.log(err);
@@ -74,7 +75,8 @@ graphD.graphs().get(function(err, data){
   if (err) {
     console.log("Graph error:" + err);
   }
-  console.log("Graph data:" + data);
+	graph = data.graphId;
+  console.log("Retrieved Graph:" + graph);
 });
 
 
@@ -244,6 +246,49 @@ router.route('/read').post(function(req, res) {
 		res.json(a);
 	}
 });
+
+router.get('/graphinit', function(req, res) {
+var schema = {
+  "propertyKeys": [
+    {"name": "name", "dataType": "String", "cardinality": "SINGLE"},
+    {"name": "location", "dataType": "String", "cardinality": "SINGLE"},
+    {"name": "blockid", "dataType": "String", "cardinality": "SINGLE"},
+    {"name": "party", "dataType": "String", "cardinality": "SINGLE"},
+    {"name": "enddate", "dataType": "String", "cardinality": "SINGLE"},
+    {"name": "startdate", "dataType": "String", "cardinality": "SINGLE"},
+    {"name": "hash", "dataType": "String", "cardinality": "SINGLE"}
+  ],
+  "vertexLabels": [
+    {"name": "party"},
+    {"name": "contract"},
+    {"name": "location"}
+  ],
+  "edgeLabels": [
+    {"name": "parties", "multiplicity": "MULTI"},
+    {"name": "locations", "multiplicity": "MULTI"}
+  ],
+  "vertexIndexes": [
+    {"name": "vByContract", "propertyKeys": ["name"], "composite": true, "unique": true},
+    {"name": "vByLocation", "propertyKeys": ["location"], "composite": true, "unique": true},
+    {"name": "vByParty", "propertyKeys": ["party"], "composite": true, "unique": true}
+  ],
+  "edgeIndexes" :[
+    {"name": "eByParties", "propertyKeys": ["party"], "composite": true, "unique": false},
+    {"name": "eByLocations", "propertyKeys": ["location"], "composite": true, "unique": false}  
+  ]
+}
+graphD.config.url = graphD.config.url.substr(0, graphD.config.url.lastIndexOf('/') + 1) + graph;
+graphD.schema().set(schema, function(err, data){
+  if (err) {
+    console.log(err);
+  }
+  res.json(data);
+}); 
+});
+
+
+
+
 
 app.use('/api', router);
 
