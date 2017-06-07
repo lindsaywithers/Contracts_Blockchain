@@ -60,7 +60,7 @@ if(process.env.VCAP_SERVICES){																	//load from vcap, search for serv
 }
 
 var graphD = new GDS(GDScreds);
-var graph = "contractgraph";
+var graph = "contractsgraph";
 graphD.session(function(err, data) {
   if (err) {
     console.log(err);
@@ -286,7 +286,7 @@ router.route('/querylocation').post(function(req, res) {
 		var resnum = 0;
 		var contract = null;
 		for (var i = 0, len = odata.result.data.length; i < len; i++) {
-		  contract = odata.result.data[0].properties.name[0].value;
+		  contract = odata.result.data[i].properties.name[0].value;
 		  console.log('Contract found: ' + contract);
 		chaincode.query.read([contract], function (e, a){
 				console.log('Blockchain returns: ', e, a);
@@ -294,6 +294,9 @@ router.route('/querylocation').post(function(req, res) {
 				resnum ++;
 				if (resnum == odata.result.data.length){
 					res.end();
+				}
+				else{
+					res.write(",");
 				}
 			});
 		}
