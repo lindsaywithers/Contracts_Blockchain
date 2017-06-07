@@ -223,7 +223,7 @@ router.route('/create').post(function(req, res) {
 		blockid = a.id;
 	}
 	
-	gremlin = {
+	var gremlinq = {
 	  gremlin: "\
 	def party1 =  graph.addVertex(T.label, 'party', 'name', party1);\
 	def party2 =  graph.addVertex(T.label, 'party', 'name', party2);\
@@ -241,7 +241,7 @@ router.route('/create').post(function(req, res) {
 		"location": req.body.location
 	  }
 	}
-	graphD.gremlin(gremlin, function(err,data){
+	graphD.gremlin(gremlinq, function(err,data){
 	  if (err) {
 	    console.log(err);
 	  }
