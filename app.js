@@ -216,7 +216,7 @@ router.get('/chainstats', function(req, res) {
 });
 
 router.route('/create').post(function(req, res) {
-	chaincode.invoke.init_contract([req.body.name, req.body.title, req.body.startdate, req.body.enddate, req.body.location, req.body.text, req.body.party1, req.body.party2 ], retCall)
+	chaincode.invoke.init_contract([req.body.name, req.body.startdate, req.body.enddate, req.body.location, req.body.text, req.body.party1, req.body.party2, req.body.title ], retCall)
 	function retCall(e, a){
 		console.log('Blockchain created entry: ', e, a);
 	}
@@ -226,7 +226,7 @@ router.route('/create').post(function(req, res) {
 	  gremlin: "\
 	def party1 =  graph.addVertex(T.label, 'party', 'name', party1);\
 	def party2 =  graph.addVertex(T.label, 'party', 'name', party2);\
-	def contract = graph.addVertex(T.label, 'contract', 'name', contractName, 'hash', hash, 'blockid', blockid);\
+	def contract = graph.addVertex(T.label, 'contract', 'name', contractName, 'hash', hash, 'title', title);\
 	def location = graph.addVertex(T.label, 'location', 'location', location);\
 	contract.addEdge('parties', party1);\
 	contract.addEdge('parties', party2);\
@@ -236,7 +236,7 @@ router.route('/create').post(function(req, res) {
 	    "party2": req.body.party2,
 	    "contractName": req.body.name,
 	    "hash": md5(req.body.text),
-		"blockid": req.body.title,
+		"title": req.body.title,
 		"location": req.body.location
 	  }
 	}
@@ -278,7 +278,7 @@ var schema = {
   "propertyKeys": [
     {"name": "name", "dataType": "String", "cardinality": "SINGLE"},
     {"name": "location", "dataType": "String", "cardinality": "SINGLE"},
-    {"name": "blockid", "dataType": "String", "cardinality": "SINGLE"},
+    {"name": "title", "dataType": "String", "cardinality": "SINGLE"},
     {"name": "party", "dataType": "String", "cardinality": "SINGLE"},
     {"name": "enddate", "dataType": "String", "cardinality": "SINGLE"},
     {"name": "startdate", "dataType": "String", "cardinality": "SINGLE"},
