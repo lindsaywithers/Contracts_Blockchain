@@ -20,7 +20,7 @@
 		"morgan": "1.1.1",
 		"serve-static": "1.9.2",
 		"ws": "1.0.1",
-		"ibm-graph-client"
+		"ibm-graph-client":"*"
 	},
 	"engines": {
 		"node": "0.12.0"
