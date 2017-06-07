@@ -287,15 +287,13 @@ router.route('/read').post(function(req, res) {
     }
 });
 
-router.route('/querylocation').post(function(req, res) {
+router.route('/query').post(function(req, res) {
     res.writeHead(200, {
         'Content-Type': 'application/json'
     });
     var gremlinq = {
-        "gremlin": "graph.traversal().V().has('location', location).bothE().outV();",
-        "bindings": {
-            "location": req.body.location
-        }
+        "gremlin": "graph.traversal().V().has('"+ req.body.type +"', '"+ req.body.value +"').inE().outV();",
+        "bindings": {}
     }
     graphD.gremlin(gremlinq, function(err, odata) {
         if (err) {
@@ -320,36 +318,6 @@ router.route('/querylocation').post(function(req, res) {
         }
     });
 });
-
-router.route('/query').post(function(req, res) {
-    res.writeHead(200, {
-        'Content-Type': 'application/json'
-    });
-    var gremlinq = req.body.gremlin;
-    graphD.gremlin(gremlinq, function(err, odata) {
-        if (err) {
-            console.log('Error: ' + err);
-        }
-        console.log(JSON.stringify(odata));
-        var resnum = 0;
-        var contract = null;
-        for (var i = 0, len = odata.result.data.length; i < len; i++) {
-            contract = odata.result.data[i].properties.name[0].value;
-            console.log('Contract found: ' + contract);
-            chaincode.query.read([contract], function(e, a) {
-                console.log('Blockchain returns: ', e, a);
-                res.write(JSON.stringify(a));
-                resnum++;
-                if (resnum == odata.result.data.length) {
-                    res.end();
-                } else {
-                    res.write(",");
-                }
-            });
-        }
-    });
-});
-
 
 router.get('/graphinit', function(req, res) {
     var schema = {
