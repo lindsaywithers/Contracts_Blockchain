@@ -61,7 +61,7 @@ if(process.env.VCAP_SERVICES){																	//load from vcap, search for serv
 }
 
 var graphD = new GDS(GDScreds);
-var graph;
+var graph = "contracts";
 graphD.session(function(err, data) {
   if (err) {
     console.log(err);
@@ -71,15 +71,8 @@ graphD.session(function(err, data) {
   }
 });
 
-graphD.graphs().get(function(err, data){
-  if (err) {
-    console.log("Graph error:" + err);
-  }
-	graph = data;
-  console.log("Retrieved Graph:" + data);
-});
 
-graphD.graphs().set(graph.graphId, function(err, data){
+graphD.graphs().set(graph, function(err, data){
   if (err) {
     console.log("Graph error:" + err);
   }
