@@ -29,6 +29,8 @@ var chaincode = null;
 var GDS = require('ibm-graph-client');
 var GDScreds = null;
 
+var md5 = require('md5');
+
 app.use(compression());
 app.use(morgan('dev'));
 app.use(bodyParser.json());
@@ -216,11 +218,37 @@ router.get('/chainstats', function(req, res) {
 });
 
 router.route('/create').post(function(req, res) {
+	var blockid = null;
 	chaincode.invoke.init_contract([req.body.name, req.body.startdate, req.body.enddate, req.body.location, req.body.text, req.body.party1, req.body.party2 ], retCall)
 	function retCall(e, a){
 		console.log('Blockchain created entry: ', e, a);
-		res.json(a);
+		blockid = a.id;
 	}
+	
+	gremlin = {
+	  "gremlin": "\
+	def party1 =  graph.addVertex(T.label, party, 'name', party1);\
+	def party2 =  graph.addVertex(T.label, party, 'name', party2);\
+	def contract = graph.addVertex(T.label, 'contract', 'name', contractName, 'hash', hash, 'blockid', blockid);\
+	def location = graph.addVertex(T.label, 'location', 'location', location);\
+	contract.addEdge('party', contract);\
+	contract.addEdge('location', location);,
+	  "bindings": {
+	    "party1": req.body.party1,
+	    "party2": req.body.party2,
+	    "contractName": req.body.name,
+	    "hash": md5(req.body.text),
+		"blockid": blockid,
+		"location": req.body.location
+	  }
+	}
+	graphD.gremlin(gremlin, function(err,data){
+	  if (err) {
+	    console.log(err);
+	  }
+	  console.log(JSON.stringify(data));
+	});
+	res.json({ message: 'Transaction Complete' });
 });
 
 router.route('/index').post(function(req, res) {
