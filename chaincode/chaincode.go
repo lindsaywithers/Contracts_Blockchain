@@ -22,8 +22,8 @@ type Contract struct{
 	EndDate string `json:"enddate"`
 	Location string `json:"location"`
 	Text string `json:"text"`
-	Party1 string `json:"party1"`
-	Party2 string `json:"party2"`
+	Company1 string `json:"company1"`
+	Company2 string `json:"company2"`
 	Title string `json:"title"`
 }
 
@@ -217,8 +217,8 @@ func (t *SimpleChaincode) init_contract(stub shim.ChaincodeStubInterface, args [
 	enddate := args[2]
 	location := args[3]
 	text := args[4]
-	party1 := args[5]
-	party2 := args[6]
+	company1 := args[5]
+	company2 := args[6]
 	title := args[7]
 
 	//check if contract already exists
@@ -235,7 +235,7 @@ func (t *SimpleChaincode) init_contract(stub shim.ChaincodeStubInterface, args [
 	}
 	
 	//build the contract json string manually
-	str := `{"name": "` + name + `","title": "` + title + `", "startdate": "` + startdate + `", "enddate": "` + enddate + `", "location": "` + location + `", "text": "` + text + `", "party1": "` + party1 + `", "party2": "` + party2 + `"}`
+	str := `{"name": "` + name + `","title": "` + title + `", "startdate": "` + startdate + `", "enddate": "` + enddate + `", "location": "` + location + `", "text": "` + text + `", "company1": "` + company1 + `", "company2": "` + company2 + `"}`
 	err = stub.PutState(name, []byte(str))									//store contract with id as key
 	if err != nil {
 		return nil, err
