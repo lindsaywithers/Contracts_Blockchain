@@ -59,7 +59,7 @@ if (process.env.VCAP_SERVICES) {
 }
 
 var graphD = new GDS(GDScreds);
-var graph = "graphcontracts";
+var graph = "graphdbcontracts";
 graphD.session(function(err, data) {
     if (err) {
         console.log(err);
@@ -233,8 +233,8 @@ router.route('/create').post(function(req, res) {
 
     var gremlinq = {
         gremlin: "\
-	def company1V =  graph.addVertex(T.label, 'company', 'name', company1);\
-	def company2V =  graph.addVertex(T.label, 'company', 'name', company2);\
+	def company1V =  graph.addVertex(T.label, 'company', 'company', company1);\
+	def company2V =  graph.addVertex(T.label, 'company', 'company', company2);\
 	def contractV = graph.addVertex(T.label, 'contract', 'name', contractName, 'hash', hash, 'title', title);\
 	def locationV = graph.addVertex(T.label, 'location', 'location', location);\
 	contractV.addEdge('companies', company1V);\
@@ -409,8 +409,8 @@ router.get('/graphinit', function(req, res) {
             }
         ],
         "vertexIndexes": [{
-                "name": "vByContract",
-                "propertyKeys": ["name"],
+                "name": "vByTitle",
+                "propertyKeys": ["title"],
                 "composite": true,
                 "unique": false
             },
@@ -430,13 +430,13 @@ router.get('/graphinit', function(req, res) {
         "edgeIndexes": [{
                 "name": "eByCompanies",
                 "propertyKeys": ["company"],
-                "composite": false,
+                "composite": true,
                 "unique": false
             },
             {
                 "name": "eByLocations",
                 "propertyKeys": ["location"],
-                "composite": false,
+                "composite": true,
                 "unique": false
             }
         ]
