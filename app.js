@@ -291,6 +291,7 @@ router.route('/query').post(function(req, res) {
     res.writeHead(200, {
         'Content-Type': 'application/json'
     });
+	res.write("[");
     var gremlinq = {
         "gremlin": "graph.traversal().V().has('"+ req.body.type +"', '"+ req.body.value +"').inE().outV();",
         "bindings": {}
@@ -307,9 +308,10 @@ router.route('/query').post(function(req, res) {
             console.log('Contract found: ' + contract);
             chaincode.query.read([contract], function(e, a) {
                 console.log('Blockchain returns: ', e, a);
-                res.write(JSON.stringify(a));
+                res.write(a);
                 resnum++;
                 if (resnum == odata.result.data.length) {
+		    res.write("]");
                     res.end();
                 } else {
                     res.write(",");
