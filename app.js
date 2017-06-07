@@ -288,11 +288,10 @@ router.route('/querylocation').post(function(req, res) {
 		for (var i = 0, len = data.length; i < len; i++) {
 		  contract = data[i].properties[0].name[0].value;
 		  console.log('Contract found: ' + contract);
-		chaincode.query.read([contract], retCall)
-			function retCall(e, a){
+		chaincode.query.read([contract], function (e, a){
 				console.log('Blockchain returns: ', e, a);
 				resp.push(a);
-			}
+			});
 		}
 	});
 
