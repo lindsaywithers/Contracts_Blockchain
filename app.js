@@ -226,13 +226,13 @@ router.route('/create').post(function(req, res) {
 	}
 	
 	gremlin = {
-	  "gremlin": "\
+	  gremlin: "\
 	def party1 =  graph.addVertex(T.label, party, 'name', party1);\
 	def party2 =  graph.addVertex(T.label, party, 'name', party2);\
 	def contract = graph.addVertex(T.label, 'contract', 'name', contractName, 'hash', hash, 'blockid', blockid);\
 	def location = graph.addVertex(T.label, 'location', 'location', location);\
 	contract.addEdge('party', contract);\
-	contract.addEdge('location', location);,
+	contract.addEdge('location', location);",
 	  "bindings": {
 	    "party1": req.body.party1,
 	    "party2": req.body.party2,
