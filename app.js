@@ -231,11 +231,11 @@ router.route('/create').post(function(req, res) {
         gremlin: "\
 	def contractV = graph.addVertex(T.label, 'contract', 'name', contractName, 'hash', hash, 'title', title);\
 	def company1V =  graph.traversal().V().has('company',company1);\
-	company1V.hasNext() ? company1V.next() : graph.addVertex(T.label, 'company', 'company', company1);\
+	company1V =  company1V.hasNext() ? company1V.next() : graph.addVertex(T.label, 'company', 'company', company1);\
 	def company2V =  graph.traversal().V().has('company',company2);\
-	company2V.hasNext() ? company2V.next() : graph.addVertex(T.label, 'company', 'company', company2);\
+	company2V =  company2V.hasNext() ? company2V.next() : graph.addVertex(T.label, 'company', 'company', company2);\
 	def locationV =  graph.traversal().V().has('location',location);\
-	locationV.hasNext() ? locationV.next() : graph.addVertex(T.label, 'location', 'location', location);\
+	locationV =  locationV.hasNext() ? locationV.next() : graph.addVertex(T.label, 'location', 'location', location);\
 	contractV.addEdge('companies', company1V);\
 	contractV.addEdge('companies', company2V);\
 	contractV.addEdge('locations', locationV);",
