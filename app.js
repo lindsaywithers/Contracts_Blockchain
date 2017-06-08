@@ -219,10 +219,6 @@ router.get('/', function(req, res) {
     });
 });
 
-router.get('/chainstats', function(req, res) {
-    res.json(ibc.chain_stats(cb_chainstats));
-});
-
 router.route('/create').post(function(req, res) {
     chaincode.invoke.init_contract([req.body.name, req.body.startdate, req.body.enddate, req.body.location, req.body.text, req.body.company1, req.body.company2, req.body.title], retCall)
 
@@ -233,10 +229,13 @@ router.route('/create').post(function(req, res) {
 
     var gremlinq = {
         gremlin: "\
-	def company1V =  graph.addVertex(T.label, 'company', 'company', company1);\
-	def company2V =  graph.addVertex(T.label, 'company', 'company', company2);\
 	def contractV = graph.addVertex(T.label, 'contract', 'name', contractName, 'hash', hash, 'title', title);\
-	def locationV = graph.addVertex(T.label, 'location', 'location', location);\
+	def company1V =  graph.traversal().V().has('company',company1);\
+	company1V.hasNext() ? company1V.next() : company1V = graph.addVertex(T.label, 'company', 'company', company1);\
+	def company2V =  graph.traversal().V().has('company',company2);\
+	company2V.hasNext() ? company2V.next() : company2V = graph.addVertex(T.label, 'company', 'company', company2);\
+	def locationV =  graph.traversal().V().has('location',location);\
+	locationV.hasNext() ? locationV.next() : locationV = graph.addVertex(T.label, 'location', 'location', location);\
 	contractV.addEdge('companies', company1V);\
 	contractV.addEdge('companies', company2V);\
 	contractV.addEdge('locations', locationV);",
@@ -270,16 +269,19 @@ router.route('/index').post(function(req, res) {
 });
 
 router.route('/delete').post(function(req, res) {
-    chaincode.invoke.delete([req.body.name], retCall)
-
-    function retCall(e, a) {
-        console.log('Blockchain returns: ', e, a);
-        res.json(a);
+var gremlinq = {
+        gremlin: "\
+	graph.traversal().V().has('contract','" + req.body.name + "').drop();\
+	graph.tx().commit();",
+        "bindings": {}
     }
-});
-
-router.route('/read').post(function(req, res) {
-    chaincode.query.read([req.body.name], retCall)
+    graphD.gremlin(gremlinq, function(err, data) {
+        if (err) {
+            console.log(err);
+        }
+        console.log(JSON.stringify(data));
+    });
+    chaincode.invoke.delete([req.body.name], retCall)
 
     function retCall(e, a) {
         console.log('Blockchain returns: ', e, a);
