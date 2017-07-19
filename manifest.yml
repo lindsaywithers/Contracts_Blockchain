@@ -8,3 +8,4 @@ applications:
   memory: 512M
   services:
    - Blockchain
+   - IBM Graph
