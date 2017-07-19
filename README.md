@@ -2,4 +2,6 @@
 Contracts_Blockchain
 
 
-[![Deploy to Bluemix](https://bluemix.net/deploy/button.png)](https://bluemix.net/deploy?repository=https://github.com/lindsaywithers/Contracts_Blockchain # [required])
+
+<a href="https://bluemix.net/deploy?repository=https://github.com/lindsaywithers/Contracts_Blockchain" # [required]><img src="https://bluemix.net/deploy/button.png" alt="Deploy to Bluemix"></a>
+
