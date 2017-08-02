@@ -1,0 +1,267 @@
+[
+    {
+        "id": "53dbf49a.6ccdb4",
+        "type": "tab",
+        "label": "Flow 2"
+    },
+    {
+        "id": "1b0dae3e.1a36d2",
+        "type": "watson-conversation-v1",
+        "z": "53dbf49a.6ccdb4",
+        "name": "Watson Conversation",
+        "workspaceid": "59f48b33-f160-4b87-845a-30bd66468073",
+        "multiuser": false,
+        "context": true,
+        "x": 590.2730712890625,
+        "y": 229.82406616210938,
+        "wires": [
+            [
+                "f7f77343.984808"
+            ]
+        ]
+    },
+    {
+        "id": "d12c6c38.c2a908",
+        "type": "watson-speech-to-text",
+        "z": "53dbf49a.6ccdb4",
+        "name": "",
+        "continuous": true,
+        "speakerlabels": false,
+        "lang": "en-US",
+        "langhidden": "en-US",
+        "langcustom": "NoCustomisationSetting",
+        "langcustomhidden": "",
+        "band": "BroadbandModel",
+        "bandhidden": "BroadbandModel",
+        "password": "36lvsGbkjIxs",
+        "x": 355.52313232421875,
+        "y": 71.07403564453125,
+        "wires": [
+            [
+                "5f65769c.b4624"
+            ]
+        ]
+    },
+    {
+        "id": "15556841.a8cc78",
+        "type": "watson-text-to-speech",
+        "z": "53dbf49a.6ccdb4",
+        "name": "",
+        "lang": "en-US",
+        "langhidden": "en-US",
+        "langcustom": "NoCustomisationSetting",
+        "langcustomhidden": "",
+        "voice": "en-US_MichaelVoice",
+        "voicehidden": "en-US_MichaelVoice",
+        "format": "audio/wav",
+        "password": "dM6TeAVZxhqH",
+        "x": 570.2731628417969,
+        "y": 322.1573181152344,
+        "wires": [
+            [
+                "aab33d8a.84201"
+            ]
+        ]
+    },
+    {
+        "id": "1ef3e44a.c1ac3c",
+        "type": "function",
+        "z": "53dbf49a.6ccdb4",
+        "name": "set payload",
+        "func": "var entity = msg.features.entities[0];\nmsg.payload = {};\nmsg.payload.type = entity.type.toLowerCase();\nmsg.payload.value = entity.text.toLowerCase();\n\nif (msg.payload.type == \"location\"){ \n    msg.params.context.contractquery = \" in \" + msg.payload.value;\n}\nelse{\n    msg.params.context.contractquery = \" with \" + msg.payload.value;\n}\n\n\nnode.warn(\"Querying the graph database for contracts with \" + msg.payload.type + \" of \" + msg.payload.value);\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 339.5232849121094,
+        "y": 151.3406982421875,
+        "wires": [
+            [
+                "b43f24cb.f994a"
+            ]
+        ]
+    },
+    {
+        "id": "aab33d8a.84201",
+        "type": "function",
+        "z": "53dbf49a.6ccdb4",
+        "name": "set payload",
+        "func": "msg.payload = msg.speech;\nflow.set('params',msg.params);\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 763.9398193359375,
+        "y": 322.1573181152344,
+        "wires": [
+            [
+                "ee6fa0dd.25a32"
+            ]
+        ]
+    },
+    {
+        "id": "ee6fa0dd.25a32",
+        "type": "play audio",
+        "z": "53dbf49a.6ccdb4",
+        "name": "",
+        "x": 965.273193359375,
+        "y": 322.1573181152344,
+        "wires": []
+    },
+    {
+        "id": "22199a92.794646",
+        "type": "microphone",
+        "z": "53dbf49a.6ccdb4",
+        "name": "",
+        "x": 141.77310180664062,
+        "y": 70.82403564453125,
+        "wires": [
+            [
+                "d12c6c38.c2a908"
+            ]
+        ]
+    },
+    {
+        "id": "e5c3cc2c.6fbca8",
+        "type": "function",
+        "z": "53dbf49a.6ccdb4",
+        "name": "add context",
+        "func": "msg.params.context.totalcontracts = msg.payload.length;\nmsg.params.context.contractends = msg.payload[0].enddate;\n\nmsg.contracts = msg.payload;\nmsg.payload = msg.transcription;\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 770.583251953125,
+        "y": 150.9999542236328,
+        "wires": [
+            [
+                "1b0dae3e.1a36d2"
+            ]
+        ]
+    },
+    {
+        "id": "b0f29f22.ba79a8",
+        "type": "e-mail",
+        "z": "53dbf49a.6ccdb4",
+        "server": "in-v3.mailjet.com",
+        "port": "465",
+        "secure": true,
+        "name": "garrett.rowe@us.ibm.com",
+        "dname": "Send Email",
+        "x": 960,
+        "y": 223.24752807617188,
+        "wires": []
+    },
+    {
+        "id": "b43f24cb.f994a",
+        "type": "http request",
+        "z": "53dbf49a.6ccdb4",
+        "name": "Query Contracts",
+        "method": "POST",
+        "ret": "obj",
+        "url": "http://contracts-blockchain.mybluemix.net/api/query",
+        "tls": "",
+        "x": 552.0001220703125,
+        "y": 150.99758911132812,
+        "wires": [
+            [
+                "e5c3cc2c.6fbca8"
+            ]
+        ]
+    },
+    {
+        "id": "6239cbf4.8db35c",
+        "type": "natural-language-understanding",
+        "z": "53dbf49a.6ccdb4",
+        "name": "Natural Language Understanding",
+        "categories": true,
+        "concepts": true,
+        "maxconcepts": "8",
+        "doc-emotion": false,
+        "doc-emotion-target": "",
+        "doc-sentiment": false,
+        "doc-sentiment-target": "",
+        "entity": true,
+        "entity-emotion": false,
+        "entity-sentiment": false,
+        "maxentities": "50",
+        "keyword": true,
+        "keyword-emotion": false,
+        "keyword-sentiment": false,
+        "maxkeywords": "50",
+        "metadata": false,
+        "relation": true,
+        "semantic": true,
+        "semantic-entities": true,
+        "semantic-keywords": true,
+        "maxsemantics": "50",
+        "x": 821.7333984375,
+        "y": 70.80001831054688,
+        "wires": [
+            [
+                "1ef3e44a.c1ac3c"
+            ]
+        ]
+    },
+    {
+        "id": "5f65769c.b4624",
+        "type": "function",
+        "z": "53dbf49a.6ccdb4",
+        "name": "set payload",
+        "func": "msg.payload = msg.transcription;\n\nmsg.params = flow.get('params')\n\nif (typeof msg.params == 'undefined'){\n    msg.params = {context:{}};\n}\n\nmsg.params.context.email = false;\n\n\nnode.warn(\"Heard: \\n\" + msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 548.36669921875,
+        "y": 71.36666870117188,
+        "wires": [
+            [
+                "6239cbf4.8db35c"
+            ]
+        ]
+    },
+    {
+        "id": "f7f77343.984808",
+        "type": "function",
+        "z": "53dbf49a.6ccdb4",
+        "name": "Route",
+        "func": "\n\nif (msg.payload.output && msg.payload.output.text) {\n    msg.wspeak = msg.payload.output.text.join('<speak version=\"1.0\"><break strength=\"strong\"></break></speak>');\n} else {\n    msg.wspeak = 'No response';\n}\n\n\nmsg.params = {};\nmsg.params.context = msg.payload.context;\n\nmsg.payload = msg.wspeak;\n\nnode.warn(msg.payload);\n\nvar out1 = null;\nvar out2 = null;\n\nout2 = msg;\n\n\nif (msg.params.context.email) {\n    msg.to = \"garrett.rowe@us.ibm.com\";\n    msg.envelope = {};\n    msg.envelope.from = \"garrett@latentsolutions.com\";\n   out1 = msg;\n}\n   \nreturn [out1,out2];\n",
+        "outputs": "2",
+        "noerr": 0,
+        "x": 785.433349609375,
+        "y": 230.16665649414062,
+        "wires": [
+            [
+                "b0f29f22.ba79a8"
+            ],
+            [
+                "15556841.a8cc78"
+            ]
+        ]
+    },
+    {
+        "id": "e26f71c4.e7bb68",
+        "type": "catch",
+        "z": "53dbf49a.6ccdb4",
+        "name": "Bypass NLU",
+        "scope": [
+            "6239cbf4.8db35c"
+        ],
+        "x": 185.73336791992188,
+        "y": 229.9000244140625,
+        "wires": [
+            [
+                "e5ef86c2.8a8358"
+            ]
+        ]
+    },
+    {
+        "id": "e5ef86c2.8a8358",
+        "type": "function",
+        "z": "53dbf49a.6ccdb4",
+        "name": "add context",
+        "func": "\nmsg.payload = msg.transcription;\nnode.warn(msg.payload);\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 359.9666442871094,
+        "y": 230.36666870117188,
+        "wires": [
+            [
+                "1b0dae3e.1a36d2"
+            ]
+        ]
+    }
+]
