@@ -1,10 +1,4 @@
-declared-services:
-  IBM Graph:
-    label: IBM Graph
-    plan: Standard
-  blockchain:
-    label: Blockchain
-    plan: High Security Business Network vNext(Limited Beta)
+---
 applications:
 - path: .
   memory: 512M
