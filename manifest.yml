@@ -4,8 +4,7 @@ applications:
   memory: 512M
   instances: 1
   domain: mybluemix.net
-  name: Contracts-Blockchain2
-  host: Contracts-Blockchain2
+  name: smartcontracts
   disk_quota: 1024M
   services:
   - IBM Graph
