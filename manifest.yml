@@ -1,11 +1,18 @@
----
+declared-services:
+  IBM Graph:
+    label: IBM Graph
+    plan: Standard
+  blockchain:
+    label: Blockchain
+    plan: High Security Business Network vNext(Limited Beta)
 applications:
-- disk_quota: 1024M
-  name: Contracts-Blockchain2
-  command: "node app.js"
-  path: "."
-  instances: 1
+- path: .
   memory: 512M
+  instances: 1
+  domain: mybluemix.net
+  name: Contracts-Blockchain2
+  host: Contracts-Blockchain2
+  disk_quota: 1024M
   services:
-   - Blockchain
-   - IBM Graph
+  - IBM Graph
+  - blockchain
