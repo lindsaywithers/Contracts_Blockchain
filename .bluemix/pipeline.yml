@@ -25,6 +25,5 @@ stages:
     script: |-
       #!/bin/bash
       cf create-service ibm-blockchain-5-prod ibm-blockchain-plan-v1-prod myblockchain
-      cf create-service IBM Graph Standard IBM Graph
       cf push "${CF_APP}"
 
