@@ -6,5 +6,3 @@ applications:
   command: "node app.js"
   name: handson-blockchain
   disk_quota: 1024M
-  services:
-  - handsonblockchain
