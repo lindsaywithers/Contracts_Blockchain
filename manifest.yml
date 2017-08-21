@@ -4,8 +4,7 @@ applications:
   memory: 512M
   instances: 1
   command: "node app.js"
-  name: smartcontracts
+  name: handson-blockchain
   disk_quota: 1024M
   services:
-  - IBM Graph
-  - Blockchain
+  - handsonblockchain
